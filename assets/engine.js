@@ -1156,56 +1156,60 @@ function openFor(n) {
   return null;
 }
 
+/* A native <select> rather than a row of chips. Tapping it hands off to the
+   OS picker — a full-height, properly scrollable list with tap targets the
+   platform guarantees. No custom touch handling, no scroll-vs-tap ambiguity,
+   and it costs one row no matter how many nodes exist. Every node in the
+   graph is two interactions away. */
+var navselect = null;
+
 function renderNav() {
   if (!navstrip) return;
-  var f = scene.focus ? BY_ID[scene.focus] : null;
-  var items = f ? childrenOf(f.id) : HUBS;
 
-  navstrip.innerHTML = "";
+  /* rebuild only when the tree changes; otherwise just sync the value,
+     so re-rendering never closes an open picker */
+  if (!navselect) {
+    navselect = document.createElement("select");
+    navselect.className = "navselect";
+    navselect.setAttribute("aria-label", "Jump to a section");
 
-  if (f) {
-    var back = document.createElement("button");
-    back.className = "navchip back";
-    back.textContent = "← " + (BY_ID[f.parent] ? BY_ID[f.parent].label : "All");
-    back.addEventListener("click", function () {
-      var t = performance.now();
-      var up = stepUp();
-      scene.focus = up;
-      scene.selected = up || "neal";
-      showNode(scene.selected, t);
-      layout(t, false); renderNav(); wake();
+    function opt(n, prefix) {
+      var o = document.createElement("option");
+      o.value = n.id;
+      o.textContent = (prefix || "") + n.label;
+      return o;
+    }
+
+    navselect.appendChild(opt(BY_ID.neal));
+
+    HUBS.forEach(function (h) {
+      var g = document.createElement("optgroup");
+      g.label = h.label;
+      g.appendChild(opt(h, ""));
+      childrenOf(h.id).forEach(function (s) {
+        g.appendChild(opt(s, "  "));
+        childrenOf(s.id).forEach(function (l) {
+          g.appendChild(opt(l, "    ↳ "));
+        });
+      });
+      navselect.appendChild(g);
     });
-    navstrip.appendChild(back);
 
-    var self = document.createElement("button");
-    self.className = "navchip on";
-    self.textContent = f.label;
-    self.style.borderColor = hexA(CATS[f.cat], 0.5);
-    self.style.color = CATS[f.cat];
-    self.addEventListener("click", function () {
-      var t = performance.now();
-      scene.selected = f.id; showNode(f.id, t); renderNav(); wake();
-    });
-    navstrip.appendChild(self);
-  }
-
-  items.forEach(function (n) {
-    var b = document.createElement("button");
-    b.className = "navchip" + (scene.selected === n.id ? " on" : "");
-    b.textContent = n.label;
-    b.style.borderColor = hexA(CATS[n.cat], scene.selected === n.id ? 0.5 : 0.26);
-    b.style.color = CATS[n.cat];
-    b.addEventListener("click", function () {
+    navselect.addEventListener("change", function () {
+      var n = BY_ID[navselect.value];
+      if (!n) return;
       var t = performance.now();
       scene.selected = n.id;
       showNode(n.id, t);
       scene.focus = openFor(n);
-      layout(t, false); renderNav(); wake();
+      layout(t, false);
+      wake();
     });
-    navstrip.appendChild(b);
-  });
 
-  navstrip.scrollLeft = 0;
+    navstrip.appendChild(navselect);
+  }
+
+  if (navselect.value !== scene.selected) navselect.value = scene.selected;
 }
 
 /* NOTE: there is deliberately no "click" listener. Taps are resolved in
