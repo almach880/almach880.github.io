@@ -142,6 +142,15 @@ var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d");
 var W = 0, H = 0, DPR = 1;
 
+/* COMPACT — the responsive design decision, not just a size tweak.
+   On a small stage the constellation shows only the core and the five hubs.
+   Sub-nodes appear when you open their branch. Six large targets beat
+   twenty-five small ones; the depth is still there, it's just one tap in. */
+var COMPACT = false;
+function updateCompact() {
+  COMPACT = Math.min(W, H) < 520;
+}
+
 NODES.forEach(function (n, i) {
   n.x = new Spring(0, 0.05);
   n.y = new Spring(0, 0.05);
@@ -191,17 +200,25 @@ function layout(now, immediate) {
 
   if (!f) {
     /* ---- level 0: constellation ---- */
-    var ring = unit * (BOOST > 1 ? 0.255 : 0.225);
-    put(BY_ID.neal, cx, cy, R(0.055, 26), 1, 1, S);
+    var ring = unit * (COMPACT ? 0.31 : BOOST > 1 ? 0.255 : 0.225);
+    put(BY_ID.neal, cx, cy, COMPACT ? unit * 0.098 : R(0.055, 26), 1, 1, S);
 
     HUBS.forEach(function (h, i) {
       var a = (i / HUBS.length) * Math.PI * 2 - Math.PI / 2;
       var hx = cx + Math.cos(a) * ring;
       var hy = cy + Math.sin(a) * ring * 0.96;
-      put(h, hx, hy, R(0.036, 17), 1, 1, S);
+      put(h, hx, hy, COMPACT ? unit * 0.072 : R(0.036, 17), 1, 1, S);
+
+      var subs = childrenOf(h.id);
+
+      if (COMPACT) {
+        /* small screen: the branch stays folded inside its hub until opened */
+        park(subs, hx, hy, S);
+        subs.forEach(function (s) { park(childrenOf(s.id), hx, hy, S); });
+        return;
+      }
 
       /* subs: wide arc, alternating orbit radius so labels never stack */
-      var subs = childrenOf(h.id);
       subs.forEach(function (s, j) {
         var t = subs.length === 1 ? 0 : (j / (subs.length - 1)) - 0.5;
         var sa = a + t * 1.2;
@@ -215,40 +232,71 @@ function layout(now, immediate) {
 
   } else if (f.kind === "hub") {
     /* ---- level 1: a hub is open ---- */
-    var ax = W * 0.44, ay = H * 0.5;
-    put(BY_ID.neal, W * 0.09, H * 0.10, unit * 0.019, 0.40, 1, S);
-    put(f, ax, ay, unit * 0.055, 1, 0.34, S);
+    var ax = COMPACT ? W * 0.5 : W * 0.44, ay = COMPACT ? H * 0.30 : H * 0.5;
+    put(BY_ID.neal, W * 0.09, H * 0.10, unit * 0.019, COMPACT ? 0 : 0.40, 1, S);
+    put(f, ax, ay, COMPACT ? unit * 0.085 : unit * 0.055, 1, 0.34, S);
 
-    fan(childrenOf(f.id), ax, ay, unit * 0.27, R(0.026, 15), S, true);
+    if (COMPACT) {
+      /* one open branch, its children spread across the full width below it */
+      var kidsC = childrenOf(f.id);
+      kidsC.forEach(function (s, j) {
+        var t = kidsC.length === 1 ? 0.5 : j / (kidsC.length - 1);
+        var col = kidsC.length <= 3 ? 3 : Math.ceil(kidsC.length / 2);
+        var row = Math.floor(j / col), inRow = j % col;
+        var perRow = Math.min(col, kidsC.length - row * col);
+        var sx = W * (0.5 + (inRow - (perRow - 1) / 2) * (0.78 / Math.max(perRow, 1)));
+        var sy = H * (0.66 + row * 0.24);
+        put(s, sx, sy, unit * 0.062, 1, 1, S);
+        park(childrenOf(s.id), sx, sy, S);
+      });
+    } else {
+      fan(childrenOf(f.id), ax, ay, unit * 0.27, R(0.026, 15), S, true);
+    }
 
-    /* other hubs retreat into a vertical rail on the left */
+    /* other hubs retreat — a vertical rail on desktop, gone entirely on a
+       phone where the nav strip already covers getting back */
     HUBS.filter(function (h) { return h.id !== f.id; })
         .forEach(function (h, i) {
-      var oy = H * (0.30 + i * 0.135);
-      put(h, W * 0.075, oy, unit * 0.013, 0.40, 1, "spatialFast");
+      var oy = COMPACT ? H * 0.06 : H * (0.30 + i * 0.135);
+      var ox = COMPACT ? W * 0.5 : W * 0.075;
+      put(h, ox, oy, COMPACT ? unit * 0.002 : unit * 0.013, COMPACT ? 0 : 0.40, 1, "spatialFast");
       childrenOf(h.id).forEach(function (s) {
-        put(s, W * 0.075, oy, unit * 0.003, 0, 1, "spatialFast");
-        park(childrenOf(s.id), W * 0.075, oy, "spatialFast");
+        put(s, ox, oy, unit * 0.003, 0, 1, "spatialFast");
+        park(childrenOf(s.id), ox, oy, "spatialFast");
       });
     });
 
   } else {
     /* ---- level 2: a sub is open, its leaves fan out ---- */
     var hub = BY_ID[f.parent];
-    var bx = W * 0.46, by = H * 0.5;
+    var bx = COMPACT ? W * 0.5 : W * 0.46, by = COMPACT ? H * 0.26 : H * 0.5;
 
-    put(BY_ID.neal, W * 0.085, H * 0.085, unit * 0.014, 0.28, 1, S);
-    if (hub) put(hub, W * 0.10, H * 0.20, unit * 0.024, 0.55, 1, S);
-    put(f, bx, by, unit * 0.050, 1, 0.34, S);
+    put(BY_ID.neal, W * 0.085, H * 0.085, unit * 0.014, COMPACT ? 0 : 0.28, 1, S);
+    if (hub) put(hub, COMPACT ? W * 0.14 : W * 0.10, COMPACT ? H * 0.08 : H * 0.20,
+                 unit * (COMPACT ? 0.032 : 0.024), COMPACT ? 0.5 : 0.55, 1, S);
+    put(f, bx, by, unit * (COMPACT ? 0.078 : 0.050), 1, 0.34, S);
 
-    fan(childrenOf(f.id), bx, by, unit * 0.26, R(0.024, 14), S, true);
+    if (COMPACT) {
+      var lv = childrenOf(f.id);
+      lv.forEach(function (s, j) {
+        var per = Math.min(3, lv.length);
+        var row = Math.floor(j / per), inRow = j % per;
+        var thisRow = Math.min(per, lv.length - row * per);
+        put(s, W * (0.5 + (inRow - (thisRow - 1) / 2) * (0.76 / Math.max(thisRow, 1))),
+            H * (0.60 + row * 0.26), unit * 0.058, 1, 1, S);
+      });
+    } else {
+      fan(childrenOf(f.id), bx, by, unit * 0.26, R(0.024, 14), S, true);
+    }
 
-    /* sibling subs stay reachable in a column under the parent hub */
+    /* sibling subs stay reachable in a column under the parent hub — on a
+       phone they'd crowd the open branch, so the nav strip carries them */
     var sibs = hub ? childrenOf(hub.id).filter(function (s) { return s.id !== f.id; }) : [];
     sibs.forEach(function (s, i) {
-      var sy = H * (0.38 + i * 0.115);
-      put(s, W * 0.10, sy, unit * 0.014, 0.42, 1, "spatialFast");
-      park(childrenOf(s.id), W * 0.10, sy, "spatialFast");
+      var sy = COMPACT ? H * 0.08 : H * (0.38 + i * 0.115);
+      var sx = COMPACT ? W * 0.14 : W * 0.10;
+      put(s, sx, sy, COMPACT ? unit * 0.002 : unit * 0.014, COMPACT ? 0 : 0.42, 1, "spatialFast");
+      park(childrenOf(s.id), sx, sy, "spatialFast");
     });
 
     /* everything on other branches folds away entirely */
@@ -342,7 +390,9 @@ function resize() {
   canvas.width = Math.round(W * DPR);
   canvas.height = Math.round(H * DPR);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  updateCompact();
   layout(performance.now(), false);
+  renderNav();
   wake();
 }
 
@@ -421,12 +471,15 @@ function targetAlphaFor(n) {
 
   if (!f) {                                   /* constellation */
     if (n.kind === "leaf") return 0;
-    return n.kind === "sub" ? 0.64 : 1;
+    /* small screen: only the core and the hubs — six big targets */
+    if (n.kind === "sub") return COMPACT ? 0 : 0.64;
+    return 1;
   }
 
   if (f.kind === "hub") {                     /* a hub is open */
     if (n.kind === "leaf") return 0;
     if (n.id === f.id || n.parent === f.id) return 1;
+    if (COMPACT) return 0;                    /* nothing else competes for taps */
     if (n.id === "neal") return 0.40;
     if (n.kind === "hub") return 0.40;
     return 0;
@@ -435,7 +488,8 @@ function targetAlphaFor(n) {
   /* a sub is open */
   if (n.id === f.id) return 1;
   if (n.parent === f.id) return 1;             /* its leaves */
-  if (n.id === f.parent) return 0.55;          /* the parent hub */
+  if (n.id === f.parent) return COMPACT ? 0.5 : 0.55;   /* the parent hub */
+  if (COMPACT) return 0;
   if (n.kind === "sub" && n.parent === f.parent) return 0.42;  /* siblings */
   if (n.id === "neal") return 0.28;
   return 0;

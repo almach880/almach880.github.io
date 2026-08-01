@@ -346,9 +346,26 @@ body.lab .hud.lab { display: block !important; }
   .detail .long { font-size: 13.5px; }
   .hint { display: none; }
 
-  /* touch targets: 44px minimum */
-  .controls { bottom: 10px; left: 10px; right: 10px; gap: 6px; }
-  .seg button { padding: 11px 14px; font-size: 10.5px; min-height: 44px; }
+  /* zoom becomes two small round buttons in the corner rather than a pill —
+     the graph needs the real estate more than the label does */
+  .controls { bottom: 10px; left: 10px; right: auto; gap: 6px; }
+  .controls .seg {
+    background: none; border: none; padding: 0; gap: 6px;
+  }
+  .controls .seg button {
+    width: 38px; height: 38px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: 17px; line-height: 1;
+    background: rgba(22,24,30,.82); border: 1px solid var(--outline-soft);
+    color: var(--on-surface-var);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .controls .seg button:active { background: var(--surface-c-high); }
+  /* "Fit" is redundant on touch — double-tap resets, and the nav strip
+     re-frames on every selection */
+  #b-fit { display: none; }
+  body.lab .seg.lab button { min-height: 40px; padding: 9px 12px; font-size: 10px;
+    width: auto; height: auto; border-radius: 999px; }
 }
 
 @media (max-width: 820px) and (orientation: landscape) {
