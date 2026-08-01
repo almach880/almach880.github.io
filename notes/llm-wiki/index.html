@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LLM Wiki — Neal Meinke</title>
+<meta name="description" content="How adopting the LLM wiki pattern changed my daily practice — persistent, compounding knowledge bases maintained by the model, not by me." />
+<meta property="og:title" content="LLM Wiki" />
+<meta property="og:description" content="The single practice that most changed how I work with AI. Knowledge that compounds instead of evaporating." />
+<meta property="og:type" content="article" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../assets/notes.css" />
+</head>
+<body>
+<div class="glow"></div>
+<div class="glow2"></div>
+
+<nav class="nav">
+  <a class="brand" href="../../">neal<span>/</span>notes</a>
+  <a href="../../">← all notes</a>
+</nav>
+
+<main class="shell">
+
+  <div class="eyebrow">Note 02 · Knowledge Engineering</div>
+  <h1>LLM Wiki</h1>
+  <p class="lede">The single practice that most changed how I work with AI. Not a tool, not a framework — a pattern for building knowledge bases where the LLM does the bookkeeping and everything compounds.</p>
+
+  <div class="meta">
+    <span><span class="dot"></span>Published 2026-08-01</span>
+    <span>~8 min read</span>
+  </div>
+
+  <h2>What I was doing before</h2>
+
+  <p>I was doing what everyone does. Dump documents into context. Prompt. Get an answer that's decent on the first question and falls apart on the third, because the model is rediscovering everything from scratch each time. Subtle questions — the ones that require connecting three sources — never got good answers because the connections evaporated between sessions.</p>
+
+  <p>I'd tried building wikis before, by hand. They all died the same way: the maintenance burden grew faster than the value. You add a source, and suddenly ten pages need updating. You do it once. You do it twice. By the fifth time you stop, and two weeks later the wiki is stale and you never open it again.</p>
+
+  <h2>The pattern that changed it</h2>
+
+  <p>Karpathy wrote up a pattern that reframed the whole thing for me. The core idea is simple, and it's the opposite of RAG:</p>
+
+  <div class="callout">
+    <span class="tag">The shift</span>
+    <p>Instead of retrieving from raw documents at query time, have the LLM <strong>incrementally build and maintain a persistent wiki</strong>. Each new source gets read, extracted, and integrated — cross-references updated, contradictions flagged, synthesis revised. The knowledge is compiled once and kept current, not re-derived on every query.</p>
+  </div>
+
+  <p>I adopted it immediately and haven't looked back. The difference in output quality is not incremental — it's a different category of result.</p>
+
+  <h2>How I actually use it</h2>
+
+  <p>My daily workflow: Obsidian open on one side, Claude Code on the other. The agent reads sources, writes wiki pages, maintains the index. I browse in real time — following links, checking the graph view, reading the updated pages as they appear. When I ask a question and get a good answer, that answer files back into the wiki as a new page. Everything compounds.</p>
+
+  <p>The part that makes this sustainable is the part I never have to do: the bookkeeping. One ingested source might touch ten or fifteen wiki pages — updating cross-references, revising summaries, flagging where new data contradicts old claims. That's the work that killed every wiki I'd ever tried to maintain by hand. Now it just happens.</p>
+
+  <h2>The three layers</h2>
+
+  <div class="steps">
+    <div class="step">
+      <h3>Raw sources</h3>
+      <p>The curated collection of source documents — articles, papers, images, data files. Immutable. The LLM reads from them but never modifies them. This is the source of truth.</p>
+    </div>
+    <div class="step">
+      <h3>The wiki</h3>
+      <p>A directory of LLM-generated markdown files. Summaries, entity pages, concept pages, comparisons, synthesis. The LLM owns this layer entirely — creating pages, updating them when new sources arrive, maintaining cross-references. I read it; the LLM writes it.</p>
+    </div>
+    <div class="step">
+      <h3>The schema</h3>
+      <p>A CLAUDE.md (or equivalent) that tells the LLM how the wiki is structured, what the conventions are, what workflows to follow. This is what makes the LLM a disciplined wiki maintainer rather than a generic chatbot. I co-evolve this with the agent over time as I figure out what works for each domain.</p>
+    </div>
+  </div>
+
+  <h2>Three operations</h2>
+
+  <p><strong>Ingest.</strong> Drop a new source, tell the LLM to process it. It reads, discusses takeaways with me, writes a summary page, updates the index, updates every relevant entity and concept page, appends to the log. I stay involved — I read the summaries, check the updates, guide emphasis.</p>
+
+  <p><strong>Query.</strong> Ask questions against the wiki. The LLM searches pages, reads them, synthesizes an answer with citations. The important part: good answers get filed back into the wiki as new pages. Explorations compound just like ingested sources do.</p>
+
+  <p><strong>Lint.</strong> Periodically ask the LLM to health-check: find contradictions, stale claims, orphan pages, missing cross-references. The agent is good at suggesting new questions to investigate and new sources to look for.</p>
+
+  <h2>Why it actually sticks</h2>
+
+  <p>The reason every previous wiki I'd built died was maintenance. The reason this one lives is that maintenance costs near zero. The LLM doesn't get bored, doesn't forget to update a cross-reference, and can touch fifteen files in one pass without complaining about it.</p>
+
+  <p>My job is to curate sources, direct the analysis, ask good questions, and think about what it all means. The LLM's job is everything else — the summarizing, cross-referencing, filing, and bookkeeping that makes a knowledge base actually useful over time.</p>
+
+  <div class="callout">
+    <span class="tag">The way I think about it</span>
+    <p>Obsidian is the IDE. The LLM is the programmer. The wiki is the codebase.</p>
+  </div>
+
+  <h2>Credit</h2>
+
+  <p>The pattern comes from Andrej Karpathy, who wrote it up as an idea file designed to be handed directly to an LLM agent. I read it, handed it to my agent, and had a working wiki within the hour. The idea is related in spirit to Vannevar Bush's Memex (1945) — a personal, curated knowledge store with associative trails between documents. Bush's vision was closer to this than to what the web became. The part he couldn't solve was who does the maintenance.</p>
+
+  <hr />
+
+  <div class="foot">
+    <div class="name">Neal Meinke</div>
+    <p>I build AI systems inside businesses — context layers, system integrations, and internal tools that replace manual work. These notes are things I've learned doing it, published as I go.</p>
+    <p><a href="https://www.linkedin.com/in/neal-meinke-40620150/">LinkedIn</a> · <a href="https://github.com/nealm682">GitHub</a> · <a href="../../">More notes</a></p>
+  </div>
+
+</main>
+
+</body>
+</html>
