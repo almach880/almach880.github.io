@@ -90,6 +90,10 @@ body.resizing { cursor: col-resize; user-select: none; }
   border-right: 1px solid var(--outline-soft);
   background: linear-gradient(180deg, var(--surface-c) 0%, var(--surface) 100%);
   min-height: 0;
+  /* type below scales against THIS column, not the viewport — so everything
+     grows when you drag the splitter, instead of stopping at a fixed cap */
+  container-type: inline-size;
+  container-name: read;
 }
 
 .mark {
@@ -107,12 +111,12 @@ body.resizing { cursor: col-resize; user-select: none; }
 }
 h1 {
   font-family: var(--disp); font-weight: 700;
-  font-size: clamp(30px, 3.4vw, 52px);
+  font-size: clamp(30px, 8cqi, 58px);
   line-height: .98; letter-spacing: -1.8px;
   margin: 0; flex: 0 0 auto;
 }
 .role {
-  font-size: clamp(12.5px, .86vw, 14.5px); line-height: 1.52;
+  font-size: clamp(12.5px, 1.7cqi, 16.5px); line-height: 1.52;
   color: var(--on-surface-var); margin: 0 0 4px; flex: 1 1 auto;
 }
 .role b { color: var(--on-surface); font-weight: 600; }
@@ -131,14 +135,15 @@ h1 {
 }
 
 .detail .kicker {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px;
+  font-family: var(--mono); font-size: clamp(10px, 1.1cqi, 13px);
+  letter-spacing: 1.2px;
   text-transform: uppercase; color: var(--accent-live, var(--on-surface-dim));
   margin-bottom: 9px; flex: 0 0 auto;
 }
 .detail h2 {
   font-family: var(--disp); font-weight: 600;
-  font-size: clamp(18px, 1.55vw, 26px);
-  letter-spacing: -.5px; margin: 0 0 14px; line-height: 1.16; flex: 0 0 auto;
+  font-size: clamp(18px, 4.6cqi, 46px);
+  letter-spacing: -.5px; margin: 0 0 14px; line-height: 1.12; flex: 0 0 auto;
 }
 
 /* one scroll region: short read, rule, long read */
@@ -149,27 +154,28 @@ h1 {
 .detail .scroll::-webkit-scrollbar { width: 4px; }
 .detail .scroll::-webkit-scrollbar-thumb { background: var(--outline); border-radius: 4px; }
 
+/* No fixed character cap — the text fills whatever width the splitter gives it.
+   Line length is held steady by scaling the type with the column instead.
+   The ratio matters: chars-per-line ≈ 2 / (cqi factor), so 2.7cqi holds the
+   measure near 70 characters whether the rail is 500px or 1200px wide. */
 .detail .body {
-  font-size: clamp(14px, 1.02vw, 17px); line-height: 1.62;
+  font-size: clamp(14px, 2.7cqi, 30px); line-height: 1.58;
   color: var(--on-surface); margin: 0; white-space: pre-wrap;
-  max-width: 62ch;
 }
 .detail .body::after {
   content: '▍'; color: var(--accent-live, var(--skl)); opacity: var(--caret, 0);
 }
 .detail .rule {
-  height: 1px; background: var(--outline-soft); margin: 18px 0;
-  max-width: 62ch;
+  height: 1px; background: var(--outline-soft); margin: 20px 0;
 }
 .detail .long {
-  font-size: clamp(13px, .93vw, 15px); line-height: 1.72;
+  font-size: clamp(13px, 2.4cqi, 27px); line-height: 1.68;
   color: var(--on-surface-var); margin: 0; white-space: pre-wrap;
-  max-width: 64ch;
 }
 .detail .long strong { color: var(--on-surface); font-weight: 600; }
 .detail .foot-note {
-  font-family: var(--mono); font-size: 10px; color: var(--on-surface-dim);
-  margin-top: 16px; line-height: 1.7; max-width: 62ch;
+  font-family: var(--mono); font-size: clamp(10px, 1.05cqi, 12.5px);
+  color: var(--on-surface-dim); margin-top: 16px; line-height: 1.7;
 }
 
 /* outbound links to things hosted elsewhere */
@@ -177,7 +183,8 @@ h1 {
 .golinks:empty { margin-top: 0; }
 .golink {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--disp); font-weight: 500; font-size: 12.5px;
+  font-family: var(--disp); font-weight: 500;
+  font-size: clamp(12.5px, 1.35cqi, 15.5px);
   padding: 7px 13px; border-radius: 10px;
   border: 1px solid var(--outline); background: var(--surface-c);
   text-decoration: none; opacity: 0; transform: translateY(4px);
