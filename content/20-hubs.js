@@ -19,11 +19,12 @@ NM.add([
   foot:"Expert: conversational AI · Advanced: agents, prompt eng., delivery",
   tags:["Conversational AI","Agents","Context engineering"] },
 
-{ id:"prj", kind:"hub", cat:"Projects", label:"Projects",
-  kicker:"Projects", title:"Built on my own time",
-  body:"Enterprise agents in production during the day; self-built SaaS at night across fintech, edtech, and health. Full lifecycle — including one through Google Workspace Marketplace approval.",
-  more:"The side projects are where I learn the parts of the stack my day job doesn't touch — frontend, database design, auth, billing, deployment, and the tedious compliance work that separates a demo from a product.\n\nPremium Tracker went all the way through Google Workspace Marketplace review, which is most of the work nobody sees. Full Semester was a founder attempt at edtech. The EDGAR platform is an ongoing exercise in parsing filings that refuse to be consistent.\n\nNone of these made me rich. All of them made me faster at the day job, which was the actual return.",
-  foot:"github.com/nealm682",
+{ id:"prj", kind:"hub", cat:"Projects", label:"Side Projects",
+  kicker:"Side Projects", title:"Built on my own time",
+  body:"Enterprise agents in production during the day; self-built SaaS at night across fintech and edtech. Full lifecycle — including one through Google Workspace Marketplace approval.",
+  more:"These are where I learn the parts of the stack my day job doesn't touch — frontend, database design, auth, billing, deployment, and the tedious compliance work that separates a demo from a product.\n\nPremium Tracker went all the way through Google Workspace Marketplace review, which is most of the work nobody sees. Full Semester was a founder attempt at edtech that didn't reach traction. The EDGAR platform is an ongoing exercise in parsing filings that refuse to be consistent.\n\nNone of these made me rich. All of them made me faster at the day job, which was the actual return.",
+  foot:"Shipped, retired, and in progress — all three are useful",
+  links:[{label:"All repos on GitHub", url:"https://github.com/nealm682"}],
   tags:["SaaS","Fintech","EdTech"] },
 
 { id:"app", kind:"hub", cat:"Approach", label:"Approach",
