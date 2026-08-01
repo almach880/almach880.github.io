@@ -5,14 +5,14 @@
 
 NM.add([
 
-{ id:"loops", kind:"sub", cat:"Concepts", label:"The Four Loops", parent:"cpt",
+{ id:"loops", kind:"leaf", cat:"Concepts", label:"The Four Loops", parent:"painted",
   kicker:"Concepts", title:"Four processes at four speeds",
   body:"The architecture under this page: four loops running at different rates against one shared node map, joined by a single rule.",
   more:"Conversation runs once per interaction. Network reads deliver arbitrary text fragments 20–60 times a second with no boundary guarantees. A parser scans for complete objects and emits one patch each. The renderer redraws at display refresh, 60–144 times a second.\n\nThe rule that joins them: loops one through three <strong>mutate</strong> state; loop four <strong>samples</strong> it. A node that arrives mid-stream simply starts existing, and its entrance animation is a function of time-since-arrival. The overlap between still-arriving and already-animating is the painted-live effect.\n\nThis is the canonical game-loop pattern — simulation decoupled from rendering — with two extra producer loops on top, and one deliberate inversion: the rate mismatch between producer and consumer is treated as visible choreography rather than hidden behind a loading state.",
   foot:"Lineage: Nystrom's game loop · Fiedler's accumulator",
   tags:["Architecture","Game loop","Streaming"] },
 
-{ id:"springs", kind:"sub", cat:"Concepts", label:"Analytic Springs", parent:"cpt",
+{ id:"springs", kind:"leaf", cat:"Concepts", label:"Analytic Springs", parent:"painted",
   kicker:"Concepts", title:"Springs without integration",
   body:"Every animated value on this page is a damped harmonic oscillator solved in closed form — which is why it can be interrupted mid-flight.",
   more:"A duration-based tween is a scripted path from A to B. Change your mind halfway and you get a discontinuity you have to hide. A spring has a destination and no opinion about the route, so it can be retargeted at any moment.\n\nThe objection is that springs normally integrate per frame, which gives up frame-rate independence. They don't have to. A damped oscillator has an exact analytic solution: store (u₀, v₀, t₀) and evaluate at elapsed time. Same sampler shape, no accumulated error.\n\nRetargeting is then four lines — read current displacement and velocity, set a new target, carry the velocity through. The animation never stops, never snaps, and never queues.\n\nOne rule does most of the perceptual work: <strong>spatial</strong> properties overshoot, <strong>effects</strong> properties never do. Overshooting position reads as mass. Overshooting opacity reads as a flicker.",
@@ -27,7 +27,7 @@ NM.add([
   links:[{label:"The painted-ui wiki", url:"https://nealm682.github.io/painted-ui/"}],
   tags:["Research","Generative UI","Canvas"] },
 
-{ id:"quiesce", kind:"sub", cat:"Concepts", label:"Quiescence", parent:"cpt",
+{ id:"quiesce", kind:"leaf", cat:"Concepts", label:"Quiescence", parent:"painted",
   kicker:"Concepts", title:"Knowing when to stop",
   body:"Ambient motion is a budgeted choice, not a default. After idle, this page stops the render loop completely.",
   more:"There's a real tension in expressive interfaces. Material's guidance is restraint — motion without meaning is clutter, and hero moments should be rare. Painted UI's instinct is the opposite: the painter never stops, because stopping breaks the illusion.\n\nHardware settles the argument. Variable-refresh displays drop to as low as 10 Hz when content is static, and that's where the battery saving lives. Continuous ambient motion pins the panel at its maximum rate indefinitely.\n\nSo: ambient drift is on by default, but it's budgeted. After idle with every spring settled, the loop genuinely stops — the HUD will read <strong>quiesced · 0 fps</strong>. Any input wakes it. The Live/Still toggle makes the budget explicit, and reduced-motion preferences remove bounce rather than removing motion.",
