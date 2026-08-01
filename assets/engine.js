@@ -166,7 +166,7 @@ EDGES.forEach(function (e) { e.alpha = new Spring(0, 0.002); e.bornAt = 0; });
 
 var scene = {
   focus: null, selected: "neal", hover: null, pressed: null,
-  drag: null, suppressClick: false,
+  drag: null,
   quiesced: false, lastInput: 0
 };
 
@@ -179,18 +179,26 @@ function layout(now, immediate) {
   var unit = Math.min(W, H);
   var S = "spatialDefault";
 
+  /* On a phone the stage is small, so proportional sizing produced 5px nodes.
+     Radii get a boost and a floor below ~520px so every node stays a real
+     target rather than something you have to zoom in to hit. */
+  var BOOST = unit < 520 ? 1.5 : 1;
+  function R(frac, floor) {
+    return Math.max(unit * frac * BOOST, (floor || 0) * (BOOST > 1 ? 1 : 0));
+  }
+
   var f = scene.focus ? BY_ID[scene.focus] : null;
 
   if (!f) {
     /* ---- level 0: constellation ---- */
-    var ring = unit * 0.225;
-    put(BY_ID.neal, cx, cy, unit * 0.055, 1, 1, S);
+    var ring = unit * (BOOST > 1 ? 0.255 : 0.225);
+    put(BY_ID.neal, cx, cy, R(0.055, 26), 1, 1, S);
 
     HUBS.forEach(function (h, i) {
       var a = (i / HUBS.length) * Math.PI * 2 - Math.PI / 2;
       var hx = cx + Math.cos(a) * ring;
       var hy = cy + Math.sin(a) * ring * 0.96;
-      put(h, hx, hy, unit * 0.036, 1, 1, S);
+      put(h, hx, hy, R(0.036, 17), 1, 1, S);
 
       /* subs: wide arc, alternating orbit radius so labels never stack */
       var subs = childrenOf(h.id);
@@ -199,7 +207,7 @@ function layout(now, immediate) {
         var sa = a + t * 1.2;
         var sr = ring * (0.52 + (j % 2) * 0.26);
         var sx = hx + Math.cos(sa) * sr, sy = hy + Math.sin(sa) * sr * 0.96;
-        put(s, sx, sy, unit * 0.016, 0.64, 1, S);
+        put(s, sx, sy, R(0.016, 10), 0.64, 1, S);
         /* leaves park inside their parent until that branch is opened */
         park(childrenOf(s.id), sx, sy, S);
       });
@@ -211,7 +219,7 @@ function layout(now, immediate) {
     put(BY_ID.neal, W * 0.09, H * 0.10, unit * 0.019, 0.40, 1, S);
     put(f, ax, ay, unit * 0.055, 1, 0.34, S);
 
-    fan(childrenOf(f.id), ax, ay, unit * 0.27, unit * 0.026, S, true);
+    fan(childrenOf(f.id), ax, ay, unit * 0.27, R(0.026, 15), S, true);
 
     /* other hubs retreat into a vertical rail on the left */
     HUBS.filter(function (h) { return h.id !== f.id; })
@@ -233,7 +241,7 @@ function layout(now, immediate) {
     if (hub) put(hub, W * 0.10, H * 0.20, unit * 0.024, 0.55, 1, S);
     put(f, bx, by, unit * 0.050, 1, 0.34, S);
 
-    fan(childrenOf(f.id), bx, by, unit * 0.26, unit * 0.024, S, true);
+    fan(childrenOf(f.id), bx, by, unit * 0.26, R(0.024, 14), S, true);
 
     /* sibling subs stay reachable in a column under the parent hub */
     var sibs = hub ? childrenOf(hub.id).filter(function (s) { return s.id !== f.id; }) : [];
@@ -565,6 +573,22 @@ function draw(now) {
       ctx.fillText(n.label, n._dx, n._dy + ry + 9);
     }
   });
+
+  /* ?lab: draw the actual tap targets, so hit-testing is visible rather than
+     guessed at. If a ring doesn't sit under the node you're aiming for, the
+     bug is here and not in your finger. */
+  if (document.body.classList.contains("lab")) {
+    NODES.forEach(function (n) {
+      if (n._a < 0.15 || n._r < 3) return;
+      ctx.beginPath();
+      ctx.arc(n._dx, n._dy, n._r + padFor(n), 0, 6.2831853);
+      ctx.strokeStyle = "rgba(125,211,192,0.28)";
+      ctx.lineWidth = 1 / cam.s;
+      ctx.setLineDash([3 / cam.s, 3 / cam.s]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
 
   ctx.restore();
 }
@@ -927,6 +951,35 @@ function endDrag(now) {
   return d.moved;
 }
 
+/* Selection happens here, on pointerup — NOT on the click event.
+   pointerdown calls preventDefault() to stop iOS text-selection and scroll,
+   and on mobile Safari that also suppresses the synthetic click. Depending on
+   `click` meant taps silently did nothing. Handling the tap ourselves removes
+   the whole class of problem and works identically for mouse and finger. */
+function handleTap(ev, now) {
+  var p = worldPos(ev);
+  var n = hit(p.x, p.y);
+
+  if (!n) {
+    /* a near-miss is not a request to collapse the view */
+    if (nearestGap(p.x, p.y) < (COARSE ? 62 : 34) / cam.s) return;
+    var up = stepUp();
+    scene.focus = up;
+    scene.selected = up || "neal";
+    showNode(scene.selected, now);
+    layout(now, false);
+    return;
+  }
+
+  scene.selected = n.id;
+  showNode(n.id, now);
+
+  /* re-tapping the node you're already inside shouldn't throw you out */
+  var target = focusTargetFor(n);
+  if (!(COARSE && target === null && scene.focus === n.id)) scene.focus = target;
+  layout(now, false);
+}
+
 window.addEventListener("pointerup", function (ev) {
   var now = performance.now();
   var sp = localPos(ev);
@@ -942,19 +995,24 @@ window.addEventListener("pointerup", function (ev) {
 
   var panned = pan && pan.moved;
   pan = null;
+  var dragged = endDrag(now);
 
-  scene.suppressClick = endDrag(now) || panned || wasPinching;
+  /* a tap is a pointerup that wasn't a drag, a pan, or half a pinch */
+  var isTap = !dragged && !panned && !wasPinching &&
+              (ev.button === undefined || ev.button === 0);
 
-  /* double-tap / double-click anywhere empty resets the camera */
-  if (!scene.suppressClick) {
-    if (now - lastTap.t < 320 && Math.hypot(sp.x - lastTap.x, sp.y - lastTap.y) < 30) {
-      if (cam.s !== 1 || cam.x !== 0 || cam.y !== 0) {
-        camTo(1, 0, 0, now);
-        scene.suppressClick = true;
-      }
+  if (isTap) {
+    var onEmpty = !hit(worldPos(ev).x, worldPos(ev).y);
+    var quick = now - lastTap.t < 320 &&
+                Math.hypot(sp.x - lastTap.x, sp.y - lastTap.y) < 30;
+
+    /* double-tap empty space resets the camera; on a node it's just two taps */
+    if (quick && onEmpty && (cam.s !== 1 || cam.x !== 0 || cam.y !== 0)) {
+      camTo(1, 0, 0, now);
       lastTap.t = 0;
     } else {
       lastTap = { t: now, x: sp.x, y: sp.y };
+      handleTap(ev, now);
     }
   }
 
@@ -983,37 +1041,10 @@ window.addEventListener("pointercancel", function (ev) {
   wake();
 });
 
-canvas.addEventListener("click", function (ev) {
-  /* a drag, a pan, or a pinch is not a click */
-  if (scene.suppressClick) { scene.suppressClick = false; return; }
-  var now = performance.now(), p = worldPos(ev), n = hit(p.x, p.y);
-
-  if (!n) {
-    /* A near-miss is not a request to collapse the view. If the tap landed
-       just outside a node, swallow it — on touch this was the main source of
-       "I tried to pick a node and it zoomed all the way out". */
-    if (nearestGap(p.x, p.y) < (COARSE ? 62 : 34) / cam.s) { wake(); return; }
-
-    /* genuine empty space steps out one level */
-    var up = stepUp();
-    scene.focus = up;
-    scene.selected = up || "neal";
-    showNode(scene.selected, now);
-    layout(now, false); wake(); return;
-  }
-
-  scene.selected = n.id;
-  showNode(n.id, now);
-
-  /* Re-tapping the node you're already inside shouldn't throw you out —
-     on touch that turned a mis-tap into a full collapse. Only the explicit
-     empty-space tap or Escape backs out. */
-  var target = focusTargetFor(n);
-  if (!(COARSE && target === null && scene.focus === n.id)) scene.focus = target;
-
-  layout(now, false);
-  wake();
-});
+/* NOTE: there is deliberately no "click" listener. Taps are resolved in
+   pointerup (see handleTap). Having both meant every tap was processed twice —
+   pointerup would open a hub and the click that followed would see you already
+   inside it and toggle it shut, which read as "that node doesn't work". */
 
 window.addEventListener("keydown", function (ev) {
   if (ev.key === "Escape") {
