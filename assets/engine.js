@@ -761,6 +761,26 @@ function nearestGap(mx, my) {
   return gap;
 }
 
+/* Touch targeting: your fingertip covers the thing you're aiming at, so
+   precision is a fiction. On coarse pointers a tap resolves to the nearest
+   node within a generous radius rather than requiring a direct hit —
+   "close enough" beats "exact" when the user can't see under their finger. */
+var SNAP_RADIUS = 90;
+
+function hitSnap(mx, my) {
+  var direct = hit(mx, my);
+  if (direct || !COARSE) return direct;
+
+  var best = null, bestD = Infinity, limit = SNAP_RADIUS / cam.s;
+  for (var i = 0; i < NODES.length; i++) {
+    var n = NODES[i];
+    if (n._a < 0.15 || n._r < 3) continue;
+    var d = Math.hypot(mx - n._dx, my - n._dy) - n._r;
+    if (d < limit && d < bestD) { best = n; bestD = d; }
+  }
+  return best;
+}
+
 function localPos(ev) {
   var r = canvas.getBoundingClientRect();
   return { x: ev.clientX - r.left, y: ev.clientY - r.top };
@@ -858,6 +878,7 @@ canvas.addEventListener("pointermove", function (ev) {
      gives trail on a fast pull and precision on a slow one. ---- */
   if (scene.drag) {
     var d = scene.drag, n = BY_ID[d.id];
+    d.maxMove = Math.max(d.maxMove, Math.hypot(p.x - d.startX, p.y - d.startY));
     if (!d.moved && Math.hypot(p.x - d.startX, p.y - d.startY) > DRAG_SLOP) {
       d.moved = true;
       n.squish.to(0, "spatialFast", now);
@@ -914,7 +935,7 @@ canvas.addEventListener("pointerdown", function (ev) {
     scene.pressed = n.id;
     n.squish.to(1, "spatialFast", now);
     scene.drag = {
-      id: n.id, moved: false,
+      id: n.id, moved: false, t0: now, maxMove: 0,
       startX: p.x, startY: p.y,
       offX: n._dx - p.x, offY: n._dy - p.y
     };
@@ -931,6 +952,23 @@ function endDrag(now) {
   scene.drag = null;
   if (!d) return false;
   var n = BY_ID[d.id];
+
+  /* A finger rolls on contact, so a tap can cross the drag threshold without
+     being a drag. If the press was short and stayed close, call it a tap:
+     send the node home quietly and let the selection through. */
+  var wasTap = (now - d.t0) < 260 && d.maxMove < 30;
+  if (d.moved && wasTap) {
+    n.x.to(n.homeX, "spatialFast", now);
+    n.y.to(n.homeY, "spatialFast", now);
+    n.r.to(n.homeR, "spatialFast", now);
+    ADJ[d.id].forEach(function (mid) {
+      var m = BY_ID[mid];
+      if (m.homeX == null) return;
+      m.x.to(m.homeX, "spatialDefault", now);
+      m.y.to(m.homeY, "spatialDefault", now);
+    });
+    return false;
+  }
 
   if (d.moved) {
     /* Release: retarget home. Velocity carries through, so a flick throws the
@@ -958,7 +996,7 @@ function endDrag(now) {
    the whole class of problem and works identically for mouse and finger. */
 function handleTap(ev, now) {
   var p = worldPos(ev);
-  var n = hit(p.x, p.y);
+  var n = hitSnap(p.x, p.y);
 
   if (!n) {
     /* a near-miss is not a request to collapse the view */
@@ -968,6 +1006,7 @@ function handleTap(ev, now) {
     scene.selected = up || "neal";
     showNode(scene.selected, now);
     layout(now, false);
+    renderNav();
     return;
   }
 
@@ -978,6 +1017,7 @@ function handleTap(ev, now) {
   var target = focusTargetFor(n);
   if (!(COARSE && target === null && scene.focus === n.id)) scene.focus = target;
   layout(now, false);
+  renderNav();
 }
 
 window.addEventListener("pointerup", function (ev) {
@@ -1040,6 +1080,74 @@ window.addEventListener("pointercancel", function (ev) {
   endDrag(now);
   wake();
 });
+
+/* ============================================================
+   8c · NAV STRIP — the reliable path on touch
+   Aiming at a 10px circle you can't see under your thumb is a losing game
+   no matter how generous the hit-testing is. The graph stays the pleasure;
+   this strip is the guarantee. Mobile only — desktop has a mouse.
+   ============================================================ */
+
+var navstrip = document.getElementById("navstrip");
+
+function openFor(n) {
+  if (n.kind === "hub") return n.id;
+  if (n.kind === "sub") return childrenOf(n.id).length ? n.id : n.parent;
+  if (n.kind === "leaf") return n.parent;
+  return null;
+}
+
+function renderNav() {
+  if (!navstrip) return;
+  var f = scene.focus ? BY_ID[scene.focus] : null;
+  var items = f ? childrenOf(f.id) : HUBS;
+
+  navstrip.innerHTML = "";
+
+  if (f) {
+    var back = document.createElement("button");
+    back.className = "navchip back";
+    back.textContent = "← " + (BY_ID[f.parent] ? BY_ID[f.parent].label : "All");
+    back.addEventListener("click", function () {
+      var t = performance.now();
+      var up = stepUp();
+      scene.focus = up;
+      scene.selected = up || "neal";
+      showNode(scene.selected, t);
+      layout(t, false); renderNav(); wake();
+    });
+    navstrip.appendChild(back);
+
+    var self = document.createElement("button");
+    self.className = "navchip on";
+    self.textContent = f.label;
+    self.style.borderColor = hexA(CATS[f.cat], 0.5);
+    self.style.color = CATS[f.cat];
+    self.addEventListener("click", function () {
+      var t = performance.now();
+      scene.selected = f.id; showNode(f.id, t); renderNav(); wake();
+    });
+    navstrip.appendChild(self);
+  }
+
+  items.forEach(function (n) {
+    var b = document.createElement("button");
+    b.className = "navchip" + (scene.selected === n.id ? " on" : "");
+    b.textContent = n.label;
+    b.style.borderColor = hexA(CATS[n.cat], scene.selected === n.id ? 0.5 : 0.26);
+    b.style.color = CATS[n.cat];
+    b.addEventListener("click", function () {
+      var t = performance.now();
+      scene.selected = n.id;
+      showNode(n.id, t);
+      scene.focus = openFor(n);
+      layout(t, false); renderNav(); wake();
+    });
+    navstrip.appendChild(b);
+  });
+
+  navstrip.scrollLeft = 0;
+}
 
 /* NOTE: there is deliberately no "click" listener. Taps are resolved in
    pointerup (see handleTap). Having both meant every tap was processed twice —
@@ -1174,6 +1282,7 @@ var t0 = performance.now();
 layout(t0, true);
 repaint(t0);
 showNode("neal", t0);
+renderNav();
 wake();
 
 })();

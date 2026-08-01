@@ -14,7 +14,7 @@
 <!-- Bump ?v= whenever site.css or engine.js changes. GitHub Pages caches
      assets for ~10 minutes and browsers cache them harder than HTML, so
      without this a visitor can get new markup with the old stylesheet. -->
-<link rel="stylesheet" href="assets/site.css?v=6" />
+<link rel="stylesheet" href="assets/site.css?v=7" />
 </head>
 <body>
 
@@ -39,6 +39,10 @@
       <a href="https://github.com/nealm682">GitHub</a>
     </nav>
   </header>
+
+  <!-- mobile only: tap-reliable navigation for the current level.
+       The graph is the pleasure; this is the guarantee. -->
+  <nav class="navstrip" id="navstrip" aria-label="Graph navigation"></nav>
 
   <aside class="rail">
     <div class="mark"><span class="pulse"></span>painted live · 4 loops · analytic springs</div>
@@ -135,6 +139,6 @@
 <script src="content/70-concepts.js"></script>
 <script src="content/71-concepts-painted-ui.js"></script>
 
-<script src="assets/engine.js?v=6"></script>
+<script src="assets/engine.js?v=7"></script>
 </body>
 </html>
