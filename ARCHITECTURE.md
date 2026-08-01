@@ -160,4 +160,17 @@ python -m http.server 8000
 git add -A && git commit -m "..." && git push
 ```
 
-Settings → Pages → Source: `main` / root. First publish can take ~10 minutes.
+Settings → Pages → Source must be **Deploy from a branch**, `main`, `/ (root)`.
+If it's set to "GitHub Actions" with no workflow file in the repo, pushes build
+nothing and the site silently stays on whatever was published when Pages was
+first enabled.
+
+**When you change `assets/site.css` or `assets/engine.js`, bump the `?v=` number
+on its `<script>` / `<link>` tag in `index.html`.** Pages caches assets for about
+ten minutes and browsers cache them longer, so without the bump a visitor can
+load new markup against the old stylesheet — which looks exactly like the change
+didn't deploy.
+
+To check what the server is actually serving, open
+`https://nealm682.github.io/assets/site.css` directly and search the text. That
+distinguishes "not deployed" from "my browser cached it."
