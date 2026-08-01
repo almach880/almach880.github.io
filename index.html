@@ -14,7 +14,7 @@
 <!-- Bump ?v= whenever site.css or engine.js changes. GitHub Pages caches
      assets for ~10 minutes and browsers cache them harder than HTML, so
      without this a visitor can get new markup with the old stylesheet. -->
-<link rel="stylesheet" href="assets/site.css?v=4" />
+<link rel="stylesheet" href="assets/site.css?v=5" />
 </head>
 <body>
 
@@ -77,27 +77,29 @@
   <main class="stage">
     <canvas id="c"></canvas>
 
-    <div class="hud">
+    <div class="hud lab">
       <div><b id="h-fps">—</b> fps</div>
       <div><b id="h-springs">0</b> springs live</div>
       <div class="state" id="h-state">painting</div>
     </div>
 
     <div class="controls">
-      <div class="seg" role="group" aria-label="Motion scheme">
-        <button id="b-exp" aria-pressed="true">Expressive</button>
-        <button id="b-std" aria-pressed="false">Standard</button>
-      </div>
-      <div class="seg" role="group" aria-label="Ambient motion">
-        <button id="b-live" aria-pressed="true">Live</button>
-        <button id="b-still" aria-pressed="false">Still</button>
-      </div>
+      <!-- Zoom is the only control a visitor needs. Everything tagged .lab is
+           hidden unless the page is opened with ?lab — see ARCHITECTURE.md. -->
       <div class="seg" role="group" aria-label="Zoom">
         <button id="b-out" aria-label="Zoom out">&minus;</button>
         <button id="b-fit" aria-label="Reset zoom">Fit</button>
         <button id="b-in" aria-label="Zoom in">+</button>
       </div>
-      <div class="seg">
+      <div class="seg lab" role="group" aria-label="Motion scheme">
+        <button id="b-exp" aria-pressed="true">Expressive</button>
+        <button id="b-std" aria-pressed="false">Standard</button>
+      </div>
+      <div class="seg lab" role="group" aria-label="Ambient motion">
+        <button id="b-live" aria-pressed="true">Live</button>
+        <button id="b-still" aria-pressed="false">Still</button>
+      </div>
+      <div class="seg lab">
         <button id="b-repaint" aria-pressed="false">Repaint</button>
       </div>
     </div>
@@ -133,6 +135,6 @@
 <script src="content/70-concepts.js"></script>
 <script src="content/71-concepts-painted-ui.js"></script>
 
-<script src="assets/engine.js?v=4"></script>
+<script src="assets/engine.js?v=5"></script>
 </body>
 </html>

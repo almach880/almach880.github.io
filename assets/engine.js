@@ -1130,6 +1130,14 @@ split.addEventListener("keydown", function (ev) {
    9 · BOOT
    ============================================================ */
 
+/* ?lab on the URL reveals the HUD and the motion controls. Off by default:
+   frame counters are for showing the engine off, not for reading a bio. */
+try {
+  if (/[?&#]lab\b/i.test(location.search + location.hash)) {
+    document.body.classList.add("lab");
+  }
+} catch (e) {}
+
 resize();
 var t0 = performance.now();
 layout(t0, true);

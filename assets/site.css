@@ -221,6 +221,12 @@ canvas {
   touch-action: none;              /* so a drag is a drag, not a scroll */
 }
 
+/* Instrumentation. Hidden for visitors; revealed with ?lab on the URL so the
+   engine can still be demonstrated without maintaining a second build. */
+.lab { display: none !important; }
+body.lab .lab { display: flex !important; }
+body.lab .hud.lab { display: block !important; }
+
 .hud {
   position: absolute; top: 14px; right: 16px; z-index: 4;
   font-family: var(--mono); font-size: 9.5px; letter-spacing: .4px;

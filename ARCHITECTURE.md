@@ -144,6 +144,24 @@ out one level; `Escape` goes all the way home.
 
 ---
 
+## Lab mode
+
+Visitors see only the zoom control. The FPS/springs HUD and the motion
+controls (Expressive/Standard, Live/Still, Repaint) are hidden by default —
+they're for demonstrating the engine, not for reading a bio.
+
+Add `?lab` to the URL to reveal them:
+
+```
+https://nealm682.github.io/?lab
+```
+
+Useful when showing someone the spring physics, the scheme swap, or the
+quiescence behaviour. Anything tagged `class="lab"` in `index.html` follows
+this switch, so new instrumentation just needs that class.
+
+---
+
 ## Local preview
 
 Double-click `index.html`. That's it.
