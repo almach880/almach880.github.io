@@ -92,6 +92,39 @@ playing video automatically.
 
 Don't also add a "Watch the demo" link — the embed replaces it.
 
+### Embedding a short looping clip
+
+For showing something rather than describing it — a screen recording, a UI in
+motion. Silent, autoplaying, repeating, no controls:
+
+```js
+loop:"assets/your-clip.mp4",
+loopPoster:"assets/your-clip-poster.jpg",
+loopLabel:"One line explaining what you're looking at",
+```
+
+**Use MP4, not GIF.** A screen recording as a GIF is several times the file
+size at half the resolution and 256 colours, which falls apart on this dark
+gradient. The wiki clip: 13.7MB source → 0.51MB MP4, versus 1.7MB for a GIF
+of only a third the duration at 600px.
+
+To encode a source recording:
+
+```bash
+ffmpeg -i source.mp4 -an -vf "scale=960:-2:flags=lanczos,fps=24" \
+  -c:v libx264 -crf 30 -preset slow -pix_fmt yuv420p -movflags +faststart \
+  assets/your-clip.mp4
+
+ffmpeg -ss 3 -i source.mp4 -frames:v 1 -vf "scale=960:-2" -q:v 4 \
+  assets/your-clip-poster.jpg
+```
+
+Keep source recordings out of git — `.gitignore` covers `assets/*-source.*`.
+Git stores every version of a binary forever, so a large source bloats the
+clone permanently even after you delete it.
+
+Under `prefers-reduced-motion` the poster image is shown instead of the video.
+
 ### A new branch (a sixth hub)
 
 1. Add the hub to `content/20-hubs.js` with `kind:"hub"` and a new `cat`.

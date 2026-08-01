@@ -22,6 +22,9 @@ NM.add([
   body:"A persistent knowledge base holding the rules and facts that have to stay consistent across sessions — so agents start with compounding context instead of starting cold.",
   more:"It holds more than code structure. I add projects, resources, and material adjacent to the work, including things that aren't code at all.\n\n<strong>Audience-aware content.</strong> I keep a wiki on stakeholder communication — researched best practices, accessibility, stakeholder perspectives, and explicit guidance on articulating complexity. Who the reader is changes the output: a developer and a product owner should get materially different explanations of the same change, and the system knows that.\n\n<strong>Ingestion is a designed process.</strong> I built a skill that branches by resource type rather than treating every source the same. And instead of dumping a document in, I have Claude interview me about it, so the right context and relationships get captured at the point of entry. That interview is where accuracy is won or lost.\n\n<strong>The graph is readable.</strong> The whole thing opens in Obsidian as a graph, which makes the relationships visible rather than implied.",
   foot:"LLM knowledge base · custom ingestion skill · Obsidian graph view",
+  loop:"assets/wiki-graph-loop.mp4",
+  loopPoster:"assets/wiki-graph-poster.jpg",
+  loopLabel:"My own engineering wiki, seen in Obsidian's graph view — every node a page, every edge a cross-reference the agent maintains.",
   tags:["Ground truth","Context engineering","Obsidian"] },
 
 { id:"skills", kind:"sub", cat:"Approach", label:"Skills", parent:"app",

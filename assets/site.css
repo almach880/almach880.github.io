@@ -183,6 +183,22 @@ h1 {
   color: var(--on-surface-dim); margin-top: 16px; line-height: 1.7;
 }
 
+/* ---------------- inline looping clip ----------------
+   Silent, autoplaying, repeating. Shows a thing instead of describing it. */
+
+.clip { margin: 0 0 18px; }
+.clip video, .clip img {
+  width: 100%; display: block;
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+  background: var(--surface-c);
+}
+.clip figcaption {
+  font-family: var(--mono); font-size: clamp(10px, 1.05cqi, 12px);
+  color: var(--on-surface-dim);
+  margin-top: 9px; line-height: 1.5;
+}
+
 /* ---------------- embedded demo video ----------------
    Click-to-load facade: a thumbnail until you press play, then the real
    player. Embedding an iframe on every node would pull ~1MB of YouTube

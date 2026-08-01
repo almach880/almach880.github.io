@@ -6,8 +6,9 @@
 NM.add([
 
 { id:"adp25", kind:"sub", cat:"Experience", label:"Sr Lead · ADP", parent:"exp",
-  kicker:"Experience · 2025 → present", title:"Senior Lead App Developer, AI Assistant",
-  body:"Builds semi-autonomous LLM agents that call tools across thousands of API endpoints to make multi-step decisions.",
+  kicker:"Experience · 2025 → present · Current",
+  title:"Senior Lead Application Developer — ADP Assist",
+  body:"On the team building ADP Assist, ADP's flagship AI assistant. I build semi-autonomous LLM agents that call tools across thousands of API endpoints to make multi-step decisions in real time.",
   more:"Promoted into the senior lead role in April 2025 after three years on the chatbot team.\n\nThe work is agent architecture: looping LLM systems that resolve intent, check permissions, call tools through MCP, and decide what to do next — rather than the single request/response pattern the platform used before. A representative example: an employee profile agent that resolves which field the user means, asks a clarifying question when the intent is ambiguous, retrieves the on-file data through a tool call, and returns it with an edit path.\n\nThe hard part is almost never the model. It's deciding what the agent is allowed to do, what it should refuse, and how it behaves when a tool call fails halfway through a multi-step plan.",
   foot:"LangGraph · MCP · AWS Strands · TypeScript",
   tags:["LangGraph","MCP","Agents"] },

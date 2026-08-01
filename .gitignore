@@ -1,0 +1,10 @@
+# Source recordings — keep the originals locally, commit only the web encodes.
+# wiki-graph.mp4 is 13.7MB; wiki-graph-loop.mp4 is 0.5MB and looks the same
+# at the size it's displayed. Git keeps every version of a binary forever,
+# so large sources bloat the clone permanently.
+assets/*-source.*
+assets/wiki-graph.mp4
+
+# OS noise
+.DS_Store
+Thumbs.db

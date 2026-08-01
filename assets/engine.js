@@ -687,8 +687,53 @@ var dLinks  = document.getElementById("d-links");
 function renderVideo(n) {
   if (!dVideo) return;
   dVideo.innerHTML = "";
-  if (!n.video) return;
+  if (n.loop) dVideo.appendChild(loopClip(n));
+  if (n.video) dVideo.appendChild(ytFacade(n));
+}
 
+/* A short silent clip that plays inline and repeats — for showing a thing
+   rather than describing it. Encoded as MP4 rather than GIF: a screen
+   recording as a GIF is several times the size at half the resolution and
+   256 colours, which falls apart on a dark gradient. */
+function loopClip(n) {
+  var fig = document.createElement("figure");
+  fig.className = "clip";
+
+  if (REDUCED) {
+    /* reduced-motion: the still frame carries the same information */
+    var im = document.createElement("img");
+    im.src = n.loopPoster || "";
+    im.alt = n.loopLabel || "";
+    fig.appendChild(im);
+  } else {
+    var v = document.createElement("video");
+    v.src = n.loop;
+    if (n.loopPoster) v.poster = n.loopPoster;
+    v.loop = true;
+    v.muted = true;            /* property AND attribute — iOS needs both */
+    v.setAttribute("muted", "");
+    v.playsInline = true;
+    v.setAttribute("playsinline", "");
+    v.setAttribute("preload", "metadata");
+    v.autoplay = true;
+    v.addEventListener("loadeddata", function () {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {
+        v.controls = true;     /* autoplay refused — let them press it */
+      });
+    });
+    fig.appendChild(v);
+  }
+
+  if (n.loopLabel) {
+    var cap = document.createElement("figcaption");
+    cap.textContent = n.loopLabel;
+    fig.appendChild(cap);
+  }
+  return fig;
+}
+
+function ytFacade(n) {
   var facade = document.createElement("button");
   facade.className = "vfacade";
   facade.type = "button";
