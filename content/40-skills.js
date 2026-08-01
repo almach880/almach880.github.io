@@ -23,7 +23,7 @@ NM.add([
   kicker:"Skills · Advanced", title:"Context engineering",
   body:"Curated, maintained knowledge layers that make agents accurate. The counterintuitive part: subtraction beats addition.",
   more:"An unfiltered dump of a company's files is worse than nothing. Not slower — actively worse, because it converts a model that would have said something obviously generic into one that says something specific and wrong.\n\nThe mechanism is simple. Your shared drive holds the current policy and also the one from 2019 that nobody deleted. Nothing in the folder structure says which is true. A human ignores the old one from memory. The model finds a confident, well-formatted, authoritative-looking document and uses it.\n\nSo the discipline is editorial, not technical: state the purpose before adding anything, connect what changes rather than freezing it as text, and prune as aggressively as you add. The biggest accuracy gain I've ever gotten came from deleting things.",
-  foot:"See the full note → /notes/context-layer/",
+  foot:"Curation over collection · subtraction beats addition",
   tags:["RAG audit","Prompt eng.","Wiki pattern"] },
 
 { id:"cc", kind:"sub", cat:"Skills", label:"AI-Accelerated Delivery", parent:"skl",

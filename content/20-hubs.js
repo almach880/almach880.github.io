@@ -38,7 +38,7 @@ NM.add([
   body:"The things I'm actively thinking about, written up as I go. Some are load-bearing in production work; some are side-project research that hasn't found its application yet.",
   more:"This branch is the one I expect to grow fastest.\n\nWriting a concept down is how I find out whether I actually understand it. Most of these started as something I built, hit friction with, and only understood properly on the third attempt — which is why the notes include what didn't work rather than just the conclusion.\n\nThe painted-UI research is a genuine side obsession: reproducing the feeling that a screen is being painted live by a model, at near-zero marginal cost per user. This page is a working instance of it.\n\nClick into any of these for the long version.",
   foot:"Expand this branch — each node is a note in progress",
-  links:[{label:"All notes", url:"notes/"}, {label:"painted-ui", url:"https://nealm682.github.io/painted-ui/"}],
+  links:[{label:"painted-ui", url:"https://nealm682.github.io/painted-ui/"}],
   tags:["Research","Notes","Painted UI"] },
 
 
