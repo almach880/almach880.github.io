@@ -34,7 +34,10 @@ NM.add([
   foot:"Watch the HUD — leave the page alone for a few seconds",
   tags:["Performance","Accessibility","Battery"] },
 
-{ id:"llm-wiki", kind:"leaf", cat:"Concepts", label:"LLM Wiki", parent:"cpt",
+/* NOTE: this was kind:"leaf" with parent:"cpt" — a leaf hanging off a hub,
+   which the layout never shows (leaves only appear when their parent SUB is
+   opened). Changed to "sub" so it renders under Concepts. */
+{ id:"llm-wiki", kind:"sub", cat:"Concepts", label:"LLM Wiki", parent:"cpt",
   kicker:"Concepts", title:"Knowledge that compounds",
   body:"The single practice that most changed how I work with AI. Instead of asking an LLM to retrieve from raw files every time, I have it build and maintain a persistent wiki — and the difference in output quality is not incremental.",
   more:"I was doing what everyone does: dumping documents into context and prompting. It worked, sort of. But every session started from zero. Subtle questions that required connecting three sources never got good answers because the model had to rediscover the connections each time.\n\nKarpathy wrote up a pattern that reframed the whole thing for me. The idea: instead of retrieval at query time, have the LLM incrementally compile knowledge into a persistent wiki. Each new source gets read, extracted, and integrated — cross-references updated, contradictions flagged, synthesis revised. The knowledge compounds instead of evaporating.\n\nI adopted it immediately and haven't looked back. My workflow now: Obsidian open on one side, Claude Code on the other. The agent reads sources, writes wiki pages, maintains the index. I browse in real time, follow links, check the graph view, ask questions that build on previous answers. The answers file back into the wiki as new pages. Everything compounds.\n\nThe reason it sticks: I'm not doing the bookkeeping. The fifteen-file update after ingesting one source — the part that made me abandon every previous wiki — just happens. The maintenance cost dropped to near zero, which means the wiki actually survives contact with real life.\n\nThree layers: raw sources (immutable, never touched by the agent), the wiki (agent-written markdown with cross-references), and a schema that keeps the agent disciplined about structure and conventions.",
@@ -42,11 +45,8 @@ NM.add([
   links:[{label:"Read the full note", url:"notes/llm-wiki/"}],
   tags:["Knowledge engineering","Obsidian","Compounding artifacts"] },
 
-{ id:"spec", kind:"sub", cat:"Concepts", label:"Spec-Driven", parent:"cpt",
-  kicker:"Concepts", title:"Specs that steer",
-  body:"A specification is not documentation written afterward. It's the instrument that aims the work before any code exists.",
-  more:"The difference between a spec that steers an agent and one it wanders away from is mostly about decisions.\n\nA weak spec describes intent. A strong one records what was decided, what was rejected and why, and what remains open — so that when the agent hits an ambiguity, the answer is already written down instead of being invented plausibly.\n\nThe practical test: hand the spec to someone with no context and see whether they'd build the same thing. If two reasonable readers would diverge, the spec has a hole, and that hole is exactly where an agent will improvise.\n\nWriting them has changed my daily practice more than any tool. Most of the thinking now happens before implementation rather than during it.",
-  foot:"Note in progress",
-  tags:["Method","Planning","Agents"] }
+/* Spec-Driven moved to the Approach branch (id "specs") — it's part of how
+   the work gets done, not a side concept, and two nodes saying the same
+   thing split the story. */
 
 ]);

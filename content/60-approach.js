@@ -1,30 +1,59 @@
-/* APPROACH — how the work gets done
+/* APPROACH — how the work gets done.
+   Six elements that compound. Generated from the delivery-stack page in
+   Neal's engineering wiki.
+
    Edit freely. Each file calls NM.add([...]) and the graph picks it up.
    Node shape: id, kind, cat, parent, label, kicker, title, body, more, foot, tags
 */
 
 NM.add([
 
-{ id:"wiki", kind:"sub", cat:"Approach", label:"Wiki-Grounded", parent:"app",
-  kicker:"Approach", title:"Wiki-grounded delivery",
-  body:"A persistent, self-updating engineering wiki giving agents compounding context on repos, components, and stakeholders.",
-  more:"A knowledge base that knows my primary repos and directories, documented component by component — and where my own understanding is thin, mapped collaboratively with agents exploring the code alongside me.\n\nIt holds more than code structure. It knows the stakeholders, the communication standards, and how to articulate a complex change to an audience that won't read a technical document.\n\nThe maintenance is the work. It gets reviewed, expanded where thin, and trimmed where distracting — and a stale wiki is worse than no wiki, for exactly the same reason a stale policy document is.",
-  foot:"Karpathy LLM-wiki pattern · brownfield onboarding",
-  tags:["Context eng.","Brownfield"] },
+{ id:"harness", kind:"sub", cat:"Approach", label:"The Harness", parent:"app",
+  kicker:"Approach · 1 of 6",
+  title:"An LLM without filesystem access is a consultant",
+  body:"Using a chat window is not the same activity as running an agent inside your repository. Read, write, create, delete — that difference accounts for most of the gain.",
+  more:"Claude Code navigates a repository rather than being handed files. On initialization it explores and documents the repo; on every invocation after that it reads its own notes first, so it arrives oriented instead of asking.\n\nThe contrast with in-editor assistants is the whole point. Copilot needs you to decide in advance which files matter — and choosing the relevant context <strong>is</strong> the hard part of the problem. That's precisely the part worth delegating.\n\nThen there's everything that isn't code. I connect Claude to Jira for reading request tickets and writing the documentation and comments back into them, plus Webex, Splunk logs, and the Git repository. The administrative half of engineering — hours spent, no code produced — becomes tractable.\n\nWriting quality matters more here than it sounds. A ticket comment written well decides whether the next person understands the state of the work. That's operational, not cosmetic.\n\nWorth saying plainly: this tooling improves monthly. I re-test things that weren't possible a quarter ago, because several of them now are.",
+  foot:"Claude Code · MCP · Jira · Splunk · Webex · Git",
+  tags:["Filesystem access","MCP","Tooling"] },
 
-{ id:"sim", kind:"sub", cat:"Approach", label:"Pre-Merge Simulation", parent:"app",
-  kicker:"Approach", title:"Pre-merge simulation",
-  body:"Simulating events, logic, and UI at the component level to validate a change before it merges.",
-  more:"In specific directories I can simulate events, exercise logic, and preview how a component renders without merging first.\n\nThe value isn't speed, it's confidence. The normal loop — write, merge, wait for an environment, discover you were wrong — has a feedback delay long enough that you stop testing hypotheses and start guessing. Compressing that loop changes what you're willing to try.\n\nIt also means the change I hand over has already been wrong several times in private.",
-  foot:"Component-level simulation · no merge required",
-  tags:["QA","Validation"] },
+{ id:"wiki", kind:"sub", cat:"Approach", label:"The Wiki", parent:"app",
+  kicker:"Approach · 2 of 6",
+  title:"Ground truth, maintained deliberately",
+  body:"A persistent knowledge base holding the rules and facts that have to stay consistent across sessions — so agents start with compounding context instead of starting cold.",
+  more:"It holds more than code structure. I add projects, resources, and material adjacent to the work, including things that aren't code at all.\n\n<strong>Audience-aware content.</strong> I keep a wiki on stakeholder communication — researched best practices, accessibility, stakeholder perspectives, and explicit guidance on articulating complexity. Who the reader is changes the output: a developer and a product owner should get materially different explanations of the same change, and the system knows that.\n\n<strong>Ingestion is a designed process.</strong> I built a skill that branches by resource type rather than treating every source the same. And instead of dumping a document in, I have Claude interview me about it, so the right context and relationships get captured at the point of entry. That interview is where accuracy is won or lost.\n\n<strong>The graph is readable.</strong> The whole thing opens in Obsidian as a graph, which makes the relationships visible rather than implied.",
+  foot:"LLM knowledge base · custom ingestion skill · Obsidian graph view",
+  tags:["Ground truth","Context engineering","Obsidian"] },
 
-{ id:"audit", kind:"sub", cat:"Approach", label:"Agentic Audit", parent:"app",
-  kicker:"Approach", title:"Agent teams that audit me",
-  body:"Independent agent teams re-check my own research against the repo before I implement.",
-  more:"After I've researched how a component works, a separate agent team audits that conclusion against the actual repository — independently, without my reasoning in its context.\n\nThe reason this works is the same reason code review works: the failure mode isn't ignorance, it's confidence. A conclusion I reached an hour ago feels settled to me and looks like an untested claim to a fresh reader.\n\nIt catches a meaningful number of confident-but-wrong conclusions that would otherwise have shipped.",
-  foot:"Independent verification pass · catches confident errors",
-  tags:["Agents","Verification"] },
+{ id:"skills", kind:"sub", cat:"Approach", label:"Skills", parent:"app",
+  kicker:"Approach · 3 of 6",
+  title:"Repetition, packaged once",
+  body:"A repetitive task gets explained to Claude one time, as a skill. It follows those instructions reliably — which turns a recurring judgment call into a deterministic procedure.",
+  more:"The value compounds in two directions.\n\nA skill refined across several iterations becomes more dependable than the ad-hoc version of the same task, because each round of use surfaces a case the instructions didn't cover.\n\nAnd it stops depending on me remembering how I did it last time. That's the quiet win — the consistency isn't coming from discipline, it's coming from the procedure existing outside my head.",
+  foot:"Write once · refine across iterations · stop re-deciding",
+  tags:["Automation","Consistency","Reuse"] },
 
+{ id:"hooks", kind:"sub", cat:"Approach", label:"Hooks", parent:"app",
+  kicker:"Approach · 4 of 6",
+  title:"Safeguards that don't depend on compliance",
+  body:"Pre- and post-hooks make something happen regardless of whether the model follows instruction. That distinction is architectural, not stylistic.",
+  more:"A skill is an instruction the model chooses to follow. A hook is a mechanism that fires either way.\n\nSo the design rule falls out on its own: anything that <strong>must</strong> be true — formatting, checks, logging, guardrails — belongs in a hook rather than in a prompt. Anything that benefits from judgment belongs in a skill.\n\nA lot of the frustration people report with agentic coding comes from putting a requirement in the wrong one of those two categories.",
+  foot:"A skill is an instruction · a hook is a mechanism",
+  tags:["Guardrails","Determinism","Reliability"] },
+
+{ id:"specs", kind:"sub", cat:"Approach", label:"Spec-Driven", parent:"app",
+  kicker:"Approach · 5 of 6",
+  title:"Everything starts with a specification",
+  body:"I spend the majority of my time planning and designing spec markdown files rather than writing implementation. It's the single change that most improved my code.",
+  more:"The loop: draft the spec, read it critically — as a reader rather than as the author — iterate through corrections, and only then build.\n\nThat reading pass is where errors surface. Ambiguity caught in a spec costs minutes. The same ambiguity caught during implementation costs a rewrite, and an agent that hits an unspecified decision won't stop to ask — it will invent a plausible answer and keep going.\n\nThe practical test: hand the spec to someone with no context and see whether they'd build the same thing. If two reasonable readers would diverge, there's a hole, and that hole is exactly where the improvisation happens.\n\nMost of the thinking now happens before implementation rather than during it, which is a better place for it.",
+  foot:"Plan in markdown · read as a reader · iterate · then build",
+  tags:["Planning","Specifications","Quality"] },
+
+{ id:"explainers", kind:"sub", cat:"Approach", label:"HTML Explainers", parent:"app",
+  kicker:"Approach · 6 of 6",
+  title:"Visual proof that the plan was understood",
+  body:"Animation- and graphic-rich single-page files generated from the wiki, explaining a concept, a detail, or a status — illustrations, animations, dropdowns, video.",
+  more:"Two uses, and the second is the one people miss.\n\n<strong>Learning.</strong> I'm a visual learner. A plan or a concept lands faster as an illustrated, animated page than as prose, so I build one when I need to actually absorb something rather than skim it.\n\n<strong>Auditing comprehension.</strong> Reviewing a visual explanation of the plan exposes whether the agent genuinely understood the task. A misunderstanding can hide comfortably inside a well-written paragraph. It cannot hide in a diagram — the boxes are either in the right places or they aren't.\n\nSo it's a proof mechanism, not a presentation format. This page is one of them.",
+  foot:"Learn from it · and use it to check the agent's comprehension",
+  tags:["Visual learning","Verification","Accessibility"] }
 
 ]);

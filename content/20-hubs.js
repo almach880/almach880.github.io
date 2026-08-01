@@ -27,11 +27,11 @@ NM.add([
   tags:["SaaS","Fintech","EdTech"] },
 
 { id:"app", kind:"hub", cat:"Approach", label:"Approach",
-  kicker:"Approach", title:"How the work gets done",
-  body:"A spec-driven, wiki-grounded delivery system: a persistent knowledge base that gives agents compounding context, specs that steer rather than describe, and agent teams that audit my own research before I implement.",
-  more:"Most people using AI to code are prompting. I'm running a system.\n\nA persistent wiki holds structured knowledge about repos, components, stakeholders, and communication standards — updated constantly, reviewed deliberately, trimmed as often as it's expanded. Specs organize the work before any code gets written, so the agent is steered rather than guessed at. Independent agent teams audit my research against the repo before I implement, which catches the confident-but-wrong conclusions that would otherwise ship.\n\nOn top of that: pre-merge simulation of components so I can validate a change without waiting for an integration environment, and rich single-page HTML reports for stakeholders who won't read a wall of text.\n\nProject managers started asking how I produce this much detail. That was the signal it was worth naming rather than just doing.",
-  foot:"Spec-driven · wiki-grounded · agentic QA · pre-merge simulation",
-  tags:["Spec-driven","Wiki-grounded","Agentic QA"] },
+  kicker:"Approach", title:"Six things, and they compound",
+  body:"Most people using AI to code are prompting. I'm running a system — six elements, each covering a failure mode of the others.",
+  more:"If you asked why I'm measurably better at this than I was a year ago, it isn't one technique. It's six that reinforce each other:\n\n<strong>1 · The harness.</strong> An agent with real filesystem access, connected to the systems the work actually lives in.\n\n<strong>2 · The wiki.</strong> Ground truth and rules, maintained deliberately, so agents start with compounding context.\n\n<strong>3 · Skills.</strong> Repetitive work explained once and executed the same way every time.\n\n<strong>4 · Hooks.</strong> Guarantees that fire whether or not the model cooperates.\n\n<strong>5 · Spec-driven development.</strong> Most of the thinking happens before implementation, in markdown.\n\n<strong>6 · HTML explainers.</strong> Visual artifacts that teach me the material — and prove the agent understood it.\n\nEach one covers something the others miss. The harness fixes the model not seeing the real system. The wiki fixes it starting cold. Skills fix the same task being done differently every time. Hooks fix instructions being ignored. Specs fix ambiguity getting resolved by improvisation. Explainers fix misunderstanding staying invisible until it ships.\n\nProject managers started asking how I produce this much detail. That was the signal it was worth naming rather than just doing.",
+  foot:"Harness · wiki · skills · hooks · specs · explainers",
+  tags:["Claude Code","Spec-driven","Context engineering"] },
 
 { id:"cpt", kind:"hub", cat:"Concepts", label:"Concepts",
   kicker:"Concepts", title:"Ideas I'm working out in public",
