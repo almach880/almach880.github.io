@@ -1097,7 +1097,8 @@ window.addEventListener("pointerup", function (ev) {
   var dragged = endDrag(now);
 
   /* a tap is a pointerup that wasn't a drag, a pan, or half a pinch */
-  var isTap = !dragged && !panned && !wasPinching &&
+  var onCanvas = ev.target === canvas;
+  var isTap = onCanvas && !dragged && !panned && !wasPinching &&
               (ev.button === undefined || ev.button === 0);
 
   if (isTap) {
