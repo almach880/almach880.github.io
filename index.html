@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Neal Meinke — AI Engineer</title>
+<meta name="description" content="Senior lead application developer and AI engineer. An above-the-fold, painted-live career and concept map built on analytic spring physics." />
+<meta property="og:title" content="Neal Meinke — AI Engineer" />
+<meta property="og:description" content="Enterprise AI agents, context engineering, and the painted-UI research. A live map, not a resume." />
+<meta property="og:type" content="profile" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <aside class="rail">
+    <div class="mark"><span class="pulse"></span>painted live · 4 loops · analytic springs</div>
+
+    <div class="head-row">
+      <h1 id="ident-name">Neal<br />Meinke</h1>
+      <p class="role" id="ident-role"></p>
+    </div>
+
+    <div class="detail" id="detail">
+      <div class="kicker" id="d-kicker"></div>
+      <h2 id="d-title"></h2>
+      <div class="scroll" id="d-scroll">
+        <p class="body" id="d-body"></p>
+        <div class="rule"></div>
+        <div class="long" id="d-long"></div>
+        <div class="golinks" id="d-links"></div>
+        <div class="foot-note" id="d-foot"></div>
+      </div>
+      <div class="chips" id="d-chips"></div>
+    </div>
+
+    <div class="rail-foot">
+      <div class="links">
+        <a href="notes/">Notes</a>
+        <a href="https://www.linkedin.com/in/nealmeinke/">LinkedIn</a>
+        <a href="https://github.com/nealm682">GitHub</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="split" id="split" role="separator" aria-orientation="vertical"
+       aria-label="Resize reading column" tabindex="0"
+       title="Drag to resize · double-click to reset"></div>
+
+  <main class="stage">
+    <canvas id="c"></canvas>
+
+    <div class="hud">
+      <div><b id="h-fps">—</b> fps</div>
+      <div><b id="h-springs">0</b> springs live</div>
+      <div class="state" id="h-state">painting</div>
+    </div>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Motion scheme">
+        <button id="b-exp" aria-pressed="true">Expressive</button>
+        <button id="b-std" aria-pressed="false">Standard</button>
+      </div>
+      <div class="seg" role="group" aria-label="Ambient motion">
+        <button id="b-live" aria-pressed="true">Live</button>
+        <button id="b-still" aria-pressed="false">Still</button>
+      </div>
+      <div class="seg">
+        <button id="b-repaint" aria-pressed="false">Repaint</button>
+      </div>
+    </div>
+
+    <div class="hint">click to open · drag a node and let go · empty space steps out</div>
+  </main>
+
+</div>
+
+<!-- ============================================================
+     CONTENT REGISTRY
+     Every file in content/ calls NM.add([...]) or NM.setIdentity({...}).
+     Plain <script> tags rather than fetch(), so the site also works when
+     opened directly from disk with file:// — no server required to preview.
+     To add a branch: drop a new file in content/ and add one line here.
+     ============================================================ -->
+<script>
+  window.NM = {
+    identity: null,
+    nodes: [],
+    add: function (list) { this.nodes = this.nodes.concat(list); return this; },
+    setIdentity: function (o) { this.identity = o; return this; }
+  };
+</script>
+
+<script src="content/00-identity.js"></script>
+<script src="content/10-core.js"></script>
+<script src="content/20-hubs.js"></script>
+<script src="content/30-experience.js"></script>
+<script src="content/40-skills.js"></script>
+<script src="content/50-projects.js"></script>
+<script src="content/60-approach.js"></script>
+<script src="content/70-concepts.js"></script>
+<script src="content/71-concepts-painted-ui.js"></script>
+
+<script src="assets/engine.js"></script>
+</body>
+</html>

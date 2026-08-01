@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Context Layer — Neal Meinke</title>
+<meta name="description" content="Why most business AI gives generic answers, why dumping more data makes it worse, and the curation discipline that actually fixes it. Interactive." />
+<meta property="og:title" content="The Context Layer" />
+<meta property="og:description" content="More data is not more context. An interactive look at why AI answers go generic — or confidently wrong — and the discipline that fixes it." />
+<meta property="og:type" content="article" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../assets/notes.css" />
+</head>
+<body>
+<div class="glow"></div>
+<div class="glow2"></div>
+
+<nav class="nav">
+  <a class="brand" href="../../">neal<span>/</span>notes</a>
+  <a href="../../">← all notes</a>
+</nav>
+
+<main class="shell">
+
+  <div class="eyebrow">Note 01 · Context Engineering</div>
+  <h1>The Context Layer</h1>
+  <p class="lede">Every company I've watched adopt AI hits the same wall: the answers are fluent, confident, and useless. The instinct is to feed it more data. That instinct is what keeps it broken.</p>
+
+  <div class="meta">
+    <span><span class="dot"></span>Published 2026-08-01</span>
+    <span>~9 min read</span>
+    <span>Interactive ×2</span>
+  </div>
+
+  <p>You connect an assistant to your business. You ask it something an experienced employee could answer in four seconds — "can we rush this customer's order?" — and you get back a paragraph that would apply equally well to a bakery, a machine shop, or a law firm.</p>
+
+  <p>So you give it more. You point it at the shared drive. You export three years of Slack. You dump every PDF anyone has ever written. And the answers get <em>worse</em> — not vaguer now, but confidently wrong in ways that are much harder to catch.</p>
+
+  <p>The problem was never how much the model could see. It was that nobody had ever written down how the business actually works in a form anything could use. That written-down thing is what I call the <strong>context layer</strong>, and building one is mostly an editing job, not an engineering job.</p>
+
+  <h2>More data is not more context</h2>
+
+  <p>This is the part that takes people a while, so it's worth being blunt about it: <strong>an unfiltered dump of your company's files is worse than nothing.</strong> Not slower. Not noisier. Actively worse, because it converts a model that would have said something obviously generic into one that says something specific and wrong.</p>
+
+  <p>The mechanism is simple. Your shared drive contains the current rush-order policy and also the one from 2019 that nobody deleted. It contains the real price list and four stale quotes. Nothing in the folder structure says which is true. A human knows to ignore the old one because they remember it being replaced. The model has no such memory — it just finds a confident, well-formatted, authoritative-sounding document and uses it.</p>
+
+  <p>Play with it. Toggle sources on and off and watch what happens to the same question.</p>
+
+  <!-- ============ INTERACTIVE 1 ============ -->
+  <div class="fig">
+    <div class="fig-head">
+      <span class="t">The Context Mixer</span>
+      <span class="h">Interactive</span>
+    </div>
+    <div class="fig-body">
+      <div class="toggle-list" id="mixer"></div>
+
+      <div class="answer" style="margin-top:18px">
+        <div class="q">The question, unchanged every time</div>
+        <div class="qtext">"A customer emailed asking if we can rush their order to arrive by Friday. What do we tell them?"</div>
+        <div id="verdict"></div>
+        <div class="atext" id="answer"></div>
+      </div>
+
+      <div class="meter-row">
+        <span class="name">Specificity</span>
+        <span class="meter"><i id="m-spec"></i></span>
+        <span class="val" id="v-spec">0</span>
+      </div>
+      <div class="meter-row">
+        <span class="name">Accuracy</span>
+        <span class="meter"><i id="m-acc"></i></span>
+        <span class="val" id="v-acc">0</span>
+      </div>
+      <div class="meter-row">
+        <span class="name">Trustable</span>
+        <span class="meter"><i id="m-use"></i></span>
+        <span class="val" id="v-use">0</span>
+      </div>
+    </div>
+    <div class="fig-cap">
+      Note the shape of it: three curated sources beat six sources every time, and the single
+      retired policy document does more damage than all the raw volume combined. "Trustable"
+      is the only meter that matters — it's whether a person can act on the answer without
+      checking it first, which is the entire point.
+    </div>
+  </div>
+
+  <h2>What actually belongs in it</h2>
+
+  <p>A context layer is not a document repository. It's a written account of how the business operates, maintained deliberately, small enough that a person could read the whole thing in an afternoon.</p>
+
+  <div class="cols">
+    <div class="col-card good">
+      <h4>Belongs</h4>
+      <ul>
+        <li>How the work actually flows — quoting, intake, fulfillment, escalation</li>
+        <li>Decision rules with their thresholds ("rush fee applies under 5 business days")</li>
+        <li>Who owns what, and who to route to</li>
+        <li>Vocabulary — what your team means by words outsiders would read differently</li>
+        <li>The exceptions people carry in their heads</li>
+        <li>Live connections to systems of record, for anything that changes daily</li>
+      </ul>
+    </div>
+    <div class="col-card bad">
+      <h4>Doesn't</h4>
+      <ul>
+        <li>Anything superseded but not deleted</li>
+        <li>Raw chat exports — enormous volume, almost no durable truth</li>
+        <li>Data that changes daily, frozen as text (connect it instead)</li>
+        <li>Documents nobody can vouch for</li>
+        <li>Four versions of the same policy</li>
+        <li>Anything you included because deleting it felt wasteful</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="tag">The test I use</span>
+    <p>For any candidate document: <strong>can someone on the team confirm this is currently true?</strong> If no one can, it doesn't go in — regardless of how much work went into writing it. Unattributable content is the raw material of confident wrong answers.</p>
+  </div>
+
+  <h2>Never add anything without stating why</h2>
+
+  <p>This is the single practice that changed my results the most, and it sounds almost too simple to matter.</p>
+
+  <p>I don't drop material into a knowledge base. I talk through it first — what this document is, why it's going in, what questions it's supposed to make answerable, and what it should <em>not</em> be used for. Then it gets written in, in a structured form, rather than pasted in raw.</p>
+
+  <pre><code>Bad:   [pastes 40-page operations manual]
+
+Good:  This is our operations manual, current as of March.
+       I want it in so the assistant can answer questions about
+       escalation paths and turnaround commitments.
+       Sections 1-3 are org history — skip them.
+       Section 7 pricing is stale; we handle pricing live from
+       the CRM, so leave it out entirely.</code></pre>
+
+  <p>Two things happen. The obvious one: the stale pricing never enters the system, so it can never be retrieved and repeated back to a customer. The subtle one: stating the purpose out loud forces me to notice when I don't actually have one — and about a third of the time, that's the moment I realize the document doesn't need to go in at all.</p>
+
+  <p>Every piece of context should be traceable to a question someone actually asks. If you can't name the question, you're archiving, not building context.</p>
+
+  <h2>Prune as aggressively as you add</h2>
+
+  <p>The half of this nobody does. A context layer gets better through <em>subtraction</em> at least as often as addition, and the review pass is not optional maintenance — it's the work.</p>
+
+  <p>When I review a page I'm asking two questions: where is this <strong>thin</strong>, and where is it <strong>distracting</strong>. Thin means a question I'd expect it to answer, that it can't — that gets expanded. Distracting means content that competes with the thing that actually matters, pulling attention toward a plausible but wrong answer — that gets cut, even if it's accurate.</p>
+
+  <p>That second category is counterintuitive and it's where most of the gains are. True but irrelevant content is not harmless. It's a distractor, and the more authoritative it looks, the more damage it does.</p>
+
+  <div class="callout warn">
+    <span class="tag">Failure mode I walked into</span>
+    <p>My first version of this was a firehose. I added everything I could find, felt productive, and got answers that were <em>more</em> confident and <em>less</em> correct than before. It took me an embarrassingly long time to try deleting things — and the accuracy jump from cutting was bigger than anything I'd gotten from adding.</p>
+  </div>
+
+  <h2>It decays, and that's the actual business</h2>
+
+  <p>A context layer is not a deliverable. It's a living thing with a half-life. The business changes, the document doesn't, and the gap between them is invisible until someone acts on a wrong answer.</p>
+
+  <p>Here's what that looks like over eighteen months, with and without a monthly review pass.</p>
+
+  <!-- ============ INTERACTIVE 2 ============ -->
+  <div class="fig">
+    <div class="fig-head">
+      <span class="t">Context Decay</span>
+      <span class="h">Drag the timeline</span>
+    </div>
+    <div class="fig-body">
+      <div class="slider-wrap">
+        <input type="range" id="months" min="0" max="18" value="0" step="1" aria-label="Months elapsed" />
+        <div class="slider-labels">
+          <span>Day one</span>
+          <span id="month-label">Month 0</span>
+          <span>18 months</span>
+        </div>
+      </div>
+
+      <div class="meter-row">
+        <span class="name">Unmaintained</span>
+        <span class="meter"><i id="m-un"></i></span>
+        <span class="val" id="v-un">96</span>
+      </div>
+      <div class="meter-row">
+        <span class="name">Reviewed monthly</span>
+        <span class="meter"><i id="m-mt"></i></span>
+        <span class="val" id="v-mt">96</span>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="q" style="font-family:var(--mono);font-size:11px;color:var(--text-mute);letter-spacing:.5px;text-transform:uppercase;margin-bottom:11px">What drifted</div>
+        <div id="drift"></div>
+      </div>
+    </div>
+    <div class="fig-cap">
+      Nothing dramatic happens. A price changes, someone leaves, a product ships. Each one is
+      small, none of them announce themselves, and the assistant keeps answering with total
+      confidence the whole way down.
+    </div>
+  </div>
+
+  <p>This is why I think of the context layer as an operating responsibility rather than a project. Somebody has to own it, and the ownership is monthly and forever. That's not a flaw in the model — it's the same reason your CRM rots if nobody tends it.</p>
+
+  <h2>The loop</h2>
+
+  <div class="steps">
+    <div class="step">
+      <h3>Start from real questions</h3>
+      <p>Collect the questions people actually ask each other — in chat, in meetings, over someone's shoulder. That list is your specification. Build to answer those, not to be comprehensive.</p>
+    </div>
+    <div class="step">
+      <h3>Add deliberately, with stated purpose</h3>
+      <p>Nothing enters raw. Every addition comes with what it's for and what it shouldn't be used for. If you can't name the question it answers, it doesn't go in.</p>
+    </div>
+    <div class="step">
+      <h3>Connect what moves</h3>
+      <p>Anything that changes faster than you'll update it should be a live connection to the system of record, not frozen text. Text is for stable things: rules, processes, definitions.</p>
+    </div>
+    <div class="step">
+      <h3>Test against known answers</h3>
+      <p>Ask questions where you already know the correct answer. Wrong answers usually point at a specific distractor you can delete — the fix is almost always removal, not addition.</p>
+    </div>
+    <div class="step">
+      <h3>Review monthly — expand thin, cut distracting</h3>
+      <p>Two passes. Where did it fail to answer something it should have? Expand. What's competing for attention with the thing that matters? Cut, even if it's true.</p>
+    </div>
+  </div>
+
+  <h2>If you're starting this week</h2>
+
+  <p>Don't begin with the shared drive. Begin with one workflow — the one where somebody gets interrupted most often — and write down how it actually works, including the exceptions that live in one person's head. That'll be two or three pages. It will outperform an entire indexed file server, and you'll have it by Friday.</p>
+
+  <p>Then resist the urge to scale it before it's correct. A small context layer that's true beats a large one that's mostly true, because "mostly true" is indistinguishable from "true" at the moment someone reads the answer.</p>
+
+  <hr />
+
+  <div class="foot">
+    <div class="name">Neal Meinke</div>
+    <p>I build AI systems inside businesses — context layers, system integrations, and internal tools that replace manual work. These notes are things I've learned doing it, published as I go.</p>
+    <p><a href="https://www.linkedin.com/in/nealmeinke/">LinkedIn</a> · <a href="https://github.com/nealm682">GitHub</a> · <a href="../../">More notes</a></p>
+  </div>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= INTERACTIVE 1 — CONTEXT MIXER ================= */
+
+  var SOURCES = [
+    { id: "policy",  kind: "signal", on: false, title: "Rush-order policy, written down and confirmed current",
+      note: "2 pages · someone owns it · reviewed last month" },
+    { id: "sched",   kind: "signal", on: false, title: "Production schedule, live connection",
+      note: "Reads the real system of record, not a snapshot" },
+    { id: "account", kind: "signal", on: false, title: "This customer's account history, live connection",
+      note: "Order volume, terms, standing" },
+    { id: "drive",   kind: "noise",  on: false, title: "The entire shared drive, unfiltered",
+      note: "12,400 files · no one has read most of them" },
+    { id: "slack",   kind: "noise",  on: false, title: "Three years of team chat, exported raw",
+      note: "Enormous volume · almost no durable truth" },
+    { id: "stale",   kind: "noise",  on: false, title: "The 2019 rush policy nobody deleted",
+      note: "Superseded · still authoritative-looking" }
+  ];
+
+  var CHECK = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none">' +
+              '<path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="#06181f" stroke-width="2" ' +
+              'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var mixer   = document.getElementById("mixer");
+  var elVerd  = document.getElementById("verdict");
+  var elAns   = document.getElementById("answer");
+
+  function buildMixer() {
+    SOURCES.forEach(function (s) {
+      var row = document.createElement("div");
+      row.className = "tgl" + (s.kind === "noise" ? " noise" : "");
+      row.setAttribute("role", "checkbox");
+      row.setAttribute("aria-checked", "false");
+      row.setAttribute("tabindex", "0");
+      row.innerHTML =
+        '<span class="box">' + CHECK + '</span>' +
+        '<span class="lbl"><b>' + s.title + '</b><i>' + s.note + '</i></span>';
+
+      function toggle() {
+        s.on = !s.on;
+        row.classList.toggle("on", s.on);
+        row.setAttribute("aria-checked", s.on ? "true" : "false");
+        render();
+      }
+      row.addEventListener("click", toggle);
+      row.addEventListener("keydown", function (e) {
+        if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); }
+      });
+      mixer.appendChild(row);
+    });
+  }
+
+  var ANSWERS = {
+    empty: {
+      cls: "v-generic", label: "Generic — true of any company",
+      html: 'Whether you can accommodate a rush order depends on your current production ' +
+            'capacity, the complexity of the item, and your shipping lead times. You may want ' +
+            'to consider whether a rush fee applies and confirm availability with your ' +
+            'operations team before committing to a date.'
+    },
+    noiseOnly: {
+      cls: "v-generic", label: "Fluent, hedged, unusable",
+      html: 'Based on the available materials, rush handling appears to be possible in some ' +
+            'circumstances. There are <span class="err">several conflicting references</span> ' +
+            'to turnaround times and fees, so I\'d recommend confirming with the team before ' +
+            'responding to the customer.'
+    },
+    wrong: {
+      cls: "v-wrong", label: "Confidently wrong — the dangerous one",
+      html: 'Yes — rush delivery is available. Per policy, rush orders require a ' +
+            '<span class="err">$75 expedite fee</span> and a ' +
+            '<span class="err">minimum five business days</span>, so Friday would be tight ' +
+            'but achievable. Let them know the fee will appear on the invoice.' +
+            '<br><br><span class="err">↳ Every number here comes from the retired 2019 ' +
+            'policy. It reads as authoritative. Nothing flags it as out of date.</span>'
+    },
+    partial: {
+      cls: "v-generic", label: "Right direction, can't close",
+      html: 'Rush orders are handled under our expedite policy, which applies inside a ' +
+            'five-business-day window. <span class="hl">I can\'t confirm Friday</span> without ' +
+            'visibility into current production load and this customer\'s standing terms.'
+    },
+    buried: {
+      cls: "v-generic", label: "Correct, but hedged into uselessness",
+      html: 'Friday looks feasible under the current expedite policy, though I\'m seeing ' +
+            '<span class="err">conflicting turnaround figures</span> across sources. ' +
+            'The schedule suggests capacity exists. I\'d verify the fee structure before ' +
+            'quoting anything to the customer.'
+    },
+    good: {
+      cls: "v-good", label: "Actionable — send it",
+      html: 'Yes. <span class="hl">Friday works.</span> Their order is two units of the ' +
+            'standard configuration, and the line has capacity Wednesday. Rush applies ' +
+            'because it\'s inside four business days — but this account is on ' +
+            '<span class="hl">Tier 2 terms, which waive the expedite fee</span>. ' +
+            'So: confirm Friday, no additional charge. Ship date Thursday.'
+    }
+  };
+
+  function render() {
+    var sig = SOURCES.filter(function (s) { return s.kind === "signal" && s.on; }).length;
+    var noi = SOURCES.filter(function (s) { return s.kind === "noise"  && s.on; }).length;
+    var stale = SOURCES.filter(function (s) { return s.id === "stale"; })[0].on;
+
+    var key;
+    if (sig === 0 && noi === 0)      key = "empty";
+    else if (stale)                  key = sig === 0 ? "noiseOnly" : "wrong";
+    else if (sig === 0)              key = "noiseOnly";
+    else if (sig >= 3 && noi === 0)  key = "good";
+    else if (noi >= 1)               key = "buried";
+    else                             key = "partial";
+
+    var a = ANSWERS[key];
+    elVerd.className = "verdict " + a.cls;
+    elVerd.textContent = a.label;
+    elAns.innerHTML = a.html;
+
+    var spec, acc;
+    if (sig === 0) spec = noi > 0 ? 26 : 10;
+    else           spec = Math.min(97, 32 + sig * 22 - noi * 5);
+
+    if (stale)          acc = sig >= 2 ? 31 : 15;
+    else if (sig === 0) acc = noi > 0 ? 20 : 34;
+    else                acc = Math.min(97, 34 + sig * 21 - noi * 11);
+
+    var use = Math.max(4, Math.min(spec, acc) - noi * 6);
+
+    set("spec", spec);
+    set("acc", acc);
+    set("use", use);
+  }
+
+  function colorFor(v) {
+    if (v >= 70) return "var(--live)";
+    if (v >= 40) return "var(--warn)";
+    return "var(--bad)";
+  }
+
+  function set(name, val) {
+    var bar = document.getElementById("m-" + name);
+    var txt = document.getElementById("v-" + name);
+    bar.style.width = val + "%";
+    bar.style.background = colorFor(val);
+    txt.textContent = Math.round(val);
+  }
+
+  /* ================= INTERACTIVE 2 — DECAY ================= */
+
+  var DRIFT = [
+    { m: 2,  t: "Expedite fee raised from $75 to $95" },
+    { m: 4,  t: "Two people left; escalation routes now point at nobody" },
+    { m: 6,  t: "New product line shipped — not described anywhere" },
+    { m: 9,  t: "Fulfillment vendor changed; lead times all shifted" },
+    { m: 12, t: "Tier 2 terms restructured" },
+    { m: 15, t: "Intake process replaced with a new form" },
+    { m: 17, t: "Second location opened, with different turnaround" }
+  ];
+
+  var slider   = document.getElementById("months");
+  var mLabel   = document.getElementById("month-label");
+  var driftBox = document.getElementById("drift");
+
+  function renderDecay() {
+    var m = parseInt(slider.value, 10);
+    mLabel.textContent = "Month " + m;
+
+    var past = DRIFT.filter(function (d) { return d.m <= m; }).length;
+    var un = Math.max(28, 96 - past * 9 - m * 0.6);
+    var mt = Math.max(86, 96 - (m > 0 ? 3 : 0));
+
+    setBar("un", un);
+    setBar("mt", mt);
+
+    if (past === 0) {
+      driftBox.innerHTML = '<p style="font-size:13.5px;color:var(--text-mute);margin:0">' +
+                           'Nothing yet. Everything written down is still true.</p>';
+      return;
+    }
+
+    driftBox.innerHTML = DRIFT.map(function (d) {
+      if (d.m > m) return "";
+      return '<div style="display:flex;gap:11px;align-items:baseline;padding:7px 0;' +
+             'border-bottom:1px solid var(--line-soft);font-size:13.5px">' +
+             '<span style="font-family:var(--mono);font-size:10.5px;color:var(--text-mute);' +
+             'flex:0 0 52px">M' + d.m + '</span>' +
+             '<span style="color:var(--bad)">' + d.t + '</span></div>';
+    }).join("");
+  }
+
+  function setBar(name, val) {
+    var bar = document.getElementById("m-" + name);
+    var txt = document.getElementById("v-" + name);
+    bar.style.width = val + "%";
+    bar.style.background = colorFor(val);
+    txt.textContent = Math.round(val);
+  }
+
+  /* ================= INIT ================= */
+
+  buildMixer();
+  render();
+  slider.addEventListener("input", renderDecay);
+  renderDecay();
+})();
+</script>
+</body>
+</html>
