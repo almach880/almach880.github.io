@@ -373,6 +373,7 @@ function frame(now) {
   });
 
   var typing = typeSetStep(now);
+  var flying = camStep(now);        /* camera reset is a performance too */
   draw(now);
 
   frames++;
@@ -386,7 +387,7 @@ function frame(now) {
      Idle long enough with everything settled and the loop truly stops. */
   var idle = now - scene.lastInput;
   var idleLimit = ambient ? 14000 : 1400;
-  if (live === 0 && !performing && !typing && idle > idleLimit) {
+  if (live === 0 && !performing && !typing && !flying && idle > idleLimit) {
     scene.quiesced = true;
     elState.textContent = "quiesced · 0 fps";
     elState.className = "state quiesced";
@@ -394,7 +395,7 @@ function frame(now) {
     return;
   }
 
-  elState.textContent = performing || typing ? "painting"
+  elState.textContent = performing || typing || flying ? "painting"
                       : live ? "settling"
                       : ambient ? "live · ambient" : "live";
   elState.className = "state";
@@ -498,6 +499,12 @@ function draw(now) {
     n._dy = n._y + driftY(n, now);
   });
 
+  /* Camera applies here and nowhere else. Everything below is drawn in world
+     coordinates, so zoom and pan cannot perturb layout or any spring in flight. */
+  ctx.save();
+  ctx.translate(cam.x, cam.y);
+  ctx.scale(cam.s, cam.s);
+
   /* edges — strokeIn is a scripted path, so a time track owns it */
   EDGES.forEach(function (e) {
     if (e._a < 0.01) return;
@@ -545,10 +552,12 @@ function draw(now) {
     ctx.lineCap = "round";
     ctx.stroke();
 
-    /* label — suppressed on retreated nodes so nothing ever overlaps */
-    if (n._r > 8 && n._a > 0.34) {
+    /* label — suppressed on retreated nodes so nothing ever overlaps.
+       Threshold is scale-aware: a node too small to label at 1× becomes
+       labellable once you've zoomed into it. */
+    if (n._r * cam.s > 8 && n._a > 0.34) {
       var fs = n.kind === "core" ? 13.5 : n.kind === "hub" ? 12 : 10.5;
-      ctx.font = (n.kind === "sub" ? "500 " : "600 ") + fs +
+      ctx.font = ((n.kind === "sub" || n.kind === "leaf") ? "500 " : "600 ") + fs +
                  "px 'Space Grotesk', system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
@@ -556,6 +565,8 @@ function draw(now) {
       ctx.fillText(n.label, n._dx, n._dy + ry + 9);
     }
   });
+
+  ctx.restore();
 }
 
 function roundedRect(c, x, y, w, h, r) {
@@ -686,16 +697,44 @@ function typeSetStep(now) {
    8 · INPUT — clicks are messages
    ============================================================ */
 
+/* A finger is about 9mm across and a mouse pointer is one pixel, so touch
+   devices get much larger targets — and the small nodes get the most,
+   since they're the ones that are hard to land on. */
+var COARSE = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+var PAD_BIG   = COARSE ? 20 : 12;
+var PAD_SMALL = COARSE ? 30 : 16;
+
+function padFor(n) {
+  var base = (n.kind === "sub" || n.kind === "leaf") ? PAD_SMALL : PAD_BIG;
+  return base / cam.s;   /* divided by scale so it stays finger-sized on screen */
+}
+
 function hit(mx, my) {
-  var best = null, bestD = Infinity;
+  var best = null, bestScore = Infinity;
   for (var i = NODES.length - 1; i >= 0; i--) {
     var n = NODES[i];
     if (n._a < 0.15 || n._r < 3) continue;
     var d = Math.hypot(mx - n._dx, my - n._dy);
-    var pad = n.kind === "sub" ? 14 : 10;
-    if (d < n._r + pad && d < bestD) { best = n; bestD = d; }
+    var reach = n._r + padFor(n);
+    if (d > reach) continue;
+    /* score by how far *into* the target you landed, not raw distance —
+       otherwise a big node always beats a small one you were aiming at */
+    var score = d - n._r;
+    if (score < bestScore) { best = n; bestScore = score; }
   }
   return best;
+}
+
+/* how close is the nearest node? used to swallow near-misses so a fumbled
+   tap doesn't read as "tapped empty space" and collapse the view */
+function nearestGap(mx, my) {
+  var gap = Infinity;
+  for (var i = 0; i < NODES.length; i++) {
+    var n = NODES[i];
+    if (n._a < 0.15 || n._r < 3) continue;
+    gap = Math.min(gap, Math.hypot(mx - n._dx, my - n._dy) - n._r);
+  }
+  return gap;
 }
 
 function localPos(ev) {
@@ -703,16 +742,92 @@ function localPos(ev) {
   return { x: ev.clientX - r.left, y: ev.clientY - r.top };
 }
 
+/* ============================================================
+   8a · CAMERA — pinch to zoom, drag empty space to pan
+   The graph is drawn in world coordinates; the camera is a transform
+   applied at paint time only. Layout, springs, and physics never see it,
+   so zooming can't perturb any motion in flight.
+   ============================================================ */
+
+var cam = { s: 1, x: 0, y: 0 };
+var CAM_MIN = 0.45, CAM_MAX = 5;
+
+function worldPos(ev) {
+  var p = localPos(ev);
+  return { x: (p.x - cam.x) / cam.s, y: (p.y - cam.y) / cam.s };
+}
+
+/* zoom about a fixed screen point — the pixel under your fingers stays put */
+function zoomAt(px, py, factor) {
+  var ns = Math.max(CAM_MIN, Math.min(CAM_MAX, cam.s * factor));
+  var k = ns / cam.s;
+  cam.x = px - (px - cam.x) * k;
+  cam.y = py - (py - cam.y) * k;
+  cam.s = ns;
+}
+
+/* reset is a performance, not a state change — so it's a time track */
+var camAnim = null;
+function camTo(s, x, y, now) {
+  camAnim = { s0: cam.s, x0: cam.x, y0: cam.y, s1: s, x1: x, y1: y,
+              t0: now, dur: 440 };
+}
+function camStep(now) {
+  if (!camAnim) return false;
+  var e = easeOutCubic(trackP(camAnim.t0, camAnim.dur, now));
+  cam.s = camAnim.s0 + (camAnim.s1 - camAnim.s0) * e;
+  cam.x = camAnim.x0 + (camAnim.x1 - camAnim.x0) * e;
+  cam.y = camAnim.y0 + (camAnim.y1 - camAnim.y0) * e;
+  if (trackP(camAnim.t0, camAnim.dur, now) >= 1) { camAnim = null; return false; }
+  return true;
+}
+
+var pointers = new Map();   /* every active touch, for pinch */
+var pinch = null;
+var pan = null;
+var lastTap = { t: 0, x: 0, y: 0 };
+
+function pinchStep() {
+  var pts = [];
+  pointers.forEach(function (v) { if (pts.length < 2) pts.push(v); });
+  if (pts.length < 2) return;
+  var dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) || 1;
+  var mx = (pts[0].x + pts[1].x) / 2, my = (pts[0].y + pts[1].y) / 2;
+  if (pinch) {
+    zoomAt(mx, my, dist / pinch.dist);
+    cam.x += mx - pinch.mx;          /* two fingers also pan */
+    cam.y += my - pinch.my;
+  }
+  pinch = { dist: dist, mx: mx, my: my };
+}
+
 /* adjacency, so neighbours can give when a node is pulled */
 var ADJ = {};
 NODES.forEach(function (n) { ADJ[n.id] = []; });
 EDGES.forEach(function (e) { ADJ[e.a].push(e.b); ADJ[e.b].push(e.a); });
 
-var DRAG_SLOP = 5;          /* px before a press becomes a drag */
+/* fingers wobble on contact; a mouse doesn't */
+var DRAG_SLOP = COARSE ? 11 : 5;   /* px before a press becomes a drag */
 var NEIGHBOR_GIVE = 0.20;   /* how much connected nodes follow */
 
 canvas.addEventListener("pointermove", function (ev) {
-  var now = performance.now(), p = localPos(ev);
+  var now = performance.now(), sp = localPos(ev), p = worldPos(ev);
+
+  if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, { x: sp.x, y: sp.y });
+
+  /* two fingers down: pinch owns the gesture entirely */
+  if (pointers.size >= 2) { pinchStep(); wake(); return; }
+
+  /* one finger on empty space: pan */
+  if (pan) {
+    cam.x += sp.x - pan.x;
+    cam.y += sp.y - pan.y;
+    if (Math.hypot(sp.x - pan.sx, sp.y - pan.sy) > DRAG_SLOP) pan.moved = true;
+    pan.x = sp.x; pan.y = sp.y;
+    canvas.style.cursor = "grabbing";
+    wake();
+    return;
+  }
 
   /* ---- dragging: the node springs toward the cursor rather than sticking
      to it. The lag is the mass — retargeting a stiff spring every move
@@ -756,7 +871,21 @@ canvas.addEventListener("pointermove", function (ev) {
 });
 
 canvas.addEventListener("pointerdown", function (ev) {
-  var now = performance.now(), p = localPos(ev), n = hit(p.x, p.y);
+  var now = performance.now(), sp = localPos(ev), p = worldPos(ev);
+  pointers.set(ev.pointerId, { x: sp.x, y: sp.y });
+  camAnim = null;
+
+  /* second finger down — abandon whatever one finger was doing */
+  if (pointers.size >= 2) {
+    if (scene.drag) endDrag(now);
+    pan = null;
+    pinch = null;
+    pinchStep();
+    wake();
+    return;
+  }
+
+  var n = hit(p.x, p.y);
   if (n) {
     scene.pressed = n.id;
     n.squish.to(1, "spatialFast", now);
@@ -765,9 +894,11 @@ canvas.addEventListener("pointerdown", function (ev) {
       startX: p.x, startY: p.y,
       offX: n._dx - p.x, offY: n._dy - p.y
     };
-    try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
-    ev.preventDefault();
+  } else {
+    pan = { x: sp.x, y: sp.y, sx: sp.x, sy: sp.y, moved: false };
   }
+  try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
+  ev.preventDefault();
   wake();
 });
 
@@ -798,17 +929,54 @@ function endDrag(now) {
 
 window.addEventListener("pointerup", function (ev) {
   var now = performance.now();
+  var sp = localPos(ev);
+  var wasPinching = pointers.size >= 2;
+
+  pointers.delete(ev.pointerId);
+  if (pointers.size < 2) pinch = null;
+
   if (scene.pressed && BY_ID[scene.pressed]) {
     BY_ID[scene.pressed].squish.to(0, "spatialFast", now);
   }
   scene.pressed = null;
-  scene.suppressClick = endDrag(now);
+
+  var panned = pan && pan.moved;
+  pan = null;
+
+  scene.suppressClick = endDrag(now) || panned || wasPinching;
+
+  /* double-tap / double-click anywhere empty resets the camera */
+  if (!scene.suppressClick) {
+    if (now - lastTap.t < 320 && Math.hypot(sp.x - lastTap.x, sp.y - lastTap.y) < 30) {
+      if (cam.s !== 1 || cam.x !== 0 || cam.y !== 0) {
+        camTo(1, 0, 0, now);
+        scene.suppressClick = true;
+      }
+      lastTap.t = 0;
+    } else {
+      lastTap = { t: now, x: sp.x, y: sp.y };
+    }
+  }
+
+  canvas.style.cursor = scene.hover ? "grab" : "default";
   try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {}
   wake();
 });
 
-window.addEventListener("pointercancel", function () {
+/* desktop: wheel / trackpad pinch */
+canvas.addEventListener("wheel", function (ev) {
+  ev.preventDefault();
+  camAnim = null;
+  var sp = localPos(ev);
+  zoomAt(sp.x, sp.y, Math.exp(-ev.deltaY * 0.0016));
+  wake();
+}, { passive: false });
+
+window.addEventListener("pointercancel", function (ev) {
   var now = performance.now();
+  pointers.delete(ev.pointerId);
+  if (pointers.size < 2) pinch = null;
+  pan = null;
   if (scene.pressed && BY_ID[scene.pressed]) BY_ID[scene.pressed].squish.to(0, "spatialFast", now);
   scene.pressed = null;
   endDrag(now);
@@ -816,20 +984,33 @@ window.addEventListener("pointercancel", function () {
 });
 
 canvas.addEventListener("click", function (ev) {
-  /* a drag is not a click */
+  /* a drag, a pan, or a pinch is not a click */
   if (scene.suppressClick) { scene.suppressClick = false; return; }
-  var now = performance.now(), p = localPos(ev), n = hit(p.x, p.y);
+  var now = performance.now(), p = worldPos(ev), n = hit(p.x, p.y);
+
   if (!n) {
-    /* empty space steps out one level rather than jumping all the way home */
+    /* A near-miss is not a request to collapse the view. If the tap landed
+       just outside a node, swallow it — on touch this was the main source of
+       "I tried to pick a node and it zoomed all the way out". */
+    if (nearestGap(p.x, p.y) < (COARSE ? 62 : 34) / cam.s) { wake(); return; }
+
+    /* genuine empty space steps out one level */
     var up = stepUp();
     scene.focus = up;
     scene.selected = up || "neal";
     showNode(scene.selected, now);
     layout(now, false); wake(); return;
   }
+
   scene.selected = n.id;
   showNode(n.id, now);
-  scene.focus = focusTargetFor(n);
+
+  /* Re-tapping the node you're already inside shouldn't throw you out —
+     on touch that turned a mis-tap into a full collapse. Only the explicit
+     empty-space tap or Escape backs out. */
+  var target = focusTargetFor(n);
+  if (!(COARSE && target === null && scene.focus === n.id)) scene.focus = target;
+
   layout(now, false);
   wake();
 });
@@ -864,6 +1045,15 @@ bExp.addEventListener("click", function () { setScheme("expressive"); });
 bStd.addEventListener("click", function () { setScheme("standard"); });
 bLive.addEventListener("click", function () { setAmbient(true); });
 bStill.addEventListener("click", function () { setAmbient(false); });
+document.getElementById("b-in").addEventListener("click", function () {
+  camAnim = null; zoomAt(W / 2, H / 2, 1.45); wake();
+});
+document.getElementById("b-out").addEventListener("click", function () {
+  camAnim = null; zoomAt(W / 2, H / 2, 1 / 1.45); wake();
+});
+document.getElementById("b-fit").addEventListener("click", function () {
+  camTo(1, 0, 0, performance.now()); wake();
+});
 document.getElementById("b-repaint").addEventListener("click", function () {
   var now = performance.now();
   scene.focus = null; scene.selected = "neal";
