@@ -18,7 +18,8 @@ NM.add([
   body:"AI edtech tool: syllabus in, colour-coded semester calendar out. Founder.",
   more:"Extracts every date and deliverable from unstructured course syllabi and writes them into Google Calendar, colour-coded by class, as a single chronological master list.\n\nThe insight was that students lose points to logistics rather than difficulty — the assignment they forgot, not the one they couldn't do. The extraction problem is genuinely hard, because a syllabus is a document format with no format.\n\nFounded and built it; it didn't reach sustainable traction. Worth including precisely because it didn't.",
   foot:"Python · React · Google Calendar API · site retired",
-  links:[{label:"Watch the demo", url:"https://www.youtube.com/watch?v=3DEZBDiCjxM"}],
+  video:"3DEZBDiCjxM",
+  videoLabel:"Full Semester — walkthrough",
   tags:["Python","React","EdTech"] },
 
 { id:"pt", kind:"sub", cat:"Projects", label:"Premium Tracker", parent:"prj",
@@ -26,9 +27,10 @@ NM.add([
   body:"Google Workspace Marketplace add-on for options traders. Taken through full marketplace approval.",
   more:"A Workspace add-on that tracks options premium for traders, live at getpremiumtracker.com.\n\nThe build was the easy half. The other half — OAuth scopes, verification, privacy policy, security assessment, and Marketplace review — is the part that turns a working script into something a stranger can install. It is tedious, it is where most side projects die, and doing it once end-to-end is worth more than three more prototypes.",
   foot:"Google Workspace · OAuth · live on the Marketplace",
+  video:"zQC594NbBL4",
+  videoLabel:"Premium Tracker — walkthrough",
   links:[
     {label:"Install from Google Workspace Marketplace", url:"https://workspace.google.com/marketplace/app/premium_tracker/87170287711"},
-    {label:"Watch the demo", url:"https://www.youtube.com/watch?v=zQC594NbBL4"},
     {label:"getpremiumtracker.com", url:"https://getpremiumtracker.com"}
   ],
   tags:["Workspace","OAuth","Fintech"] },

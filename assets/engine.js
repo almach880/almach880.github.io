@@ -678,7 +678,60 @@ var dBody   = document.getElementById("d-body");
 var dChips  = document.getElementById("d-chips");
 var detail  = document.getElementById("detail");
 var dLong   = document.getElementById("d-long");
+var dVideo  = document.getElementById("d-video");
 var dLinks  = document.getElementById("d-links");
+
+/* Demo videos load on click, not on render. A node with `video: "<id>"`
+   shows a thumbnail; pressing play swaps in the real player. Nothing from
+   YouTube is fetched until someone actually wants to watch. */
+function renderVideo(n) {
+  if (!dVideo) return;
+  dVideo.innerHTML = "";
+  if (!n.video) return;
+
+  var facade = document.createElement("button");
+  facade.className = "vfacade";
+  facade.type = "button";
+  facade.setAttribute("aria-label", "Play the demo video for " + n.label);
+
+  var img = document.createElement("img");
+  img.alt = "";
+  img.loading = "lazy";
+  img.src = "https://i.ytimg.com/vi/" + n.video + "/maxresdefault.jpg";
+  img.onerror = function () {          /* not every upload has a maxres still */
+    img.onerror = null;
+    img.src = "https://i.ytimg.com/vi/" + n.video + "/hqdefault.jpg";
+  };
+
+  var play = document.createElement("span");
+  play.className = "vplay";
+  play.innerHTML = '<svg width="18" height="20" viewBox="0 0 18 20" aria-hidden="true">' +
+                   '<path d="M1 1.8v16.4a1 1 0 0 0 1.52.85l13.4-8.2a1 1 0 0 0 0-1.7L2.52.95A1 1 0 0 0 1 1.8z" ' +
+                   'fill="#fff"/></svg>';
+
+  var cap = document.createElement("span");
+  cap.className = "vcap";
+  cap.textContent = n.videoLabel || "Watch the demo";
+
+  facade.appendChild(img);
+  facade.appendChild(play);
+  facade.appendChild(cap);
+
+  facade.addEventListener("click", function () {
+    var f = document.createElement("iframe");
+    f.src = "https://www.youtube-nocookie.com/embed/" + n.video +
+            "?autoplay=1&rel=0&modestbranding=1";
+    f.title = (n.videoLabel || "Demo") + " — " + n.label;
+    f.setAttribute("frameborder", "0");
+    f.setAttribute("allow",
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+    f.allowFullscreen = true;
+    dVideo.innerHTML = "";
+    dVideo.appendChild(f);
+  });
+
+  dVideo.appendChild(facade);
+}
 var dFoot   = document.getElementById("d-foot");
 var dScroll = document.getElementById("d-scroll");
 
@@ -701,6 +754,7 @@ function showNode(id, now) {
 
   dLong.innerHTML = escapeButBold(n.more || "");
   dFoot.textContent = n.foot || "";
+  renderVideo(n);          /* also tears down a playing iframe on node change */
   dScroll.scrollTop = 0;
 
   /* effects family: opacity never overshoots */

@@ -75,8 +75,22 @@ That's the whole process.
   more:"Long read. Blank lines with \\n\\n become paragraphs.",
   foot:"small mono line at the bottom",
   links:[{label:"See it live", url:"https://..."}],   // optional
+  video:"YOUTUBE_ID",                                // optional, see below
+  videoLabel:"Caption on the thumbnail",             // optional
   tags:["Chip","Chip","Chip"] }
 ```
+
+### Embedding a demo video
+
+Add `video` with just the YouTube ID — the part after `watch?v=`. So
+`https://www.youtube.com/watch?v=zQC594NbBL4` becomes `video:"zQC594NbBL4"`.
+
+It renders as a thumbnail with a play button. The real player only loads when
+someone presses it, so the page never pulls YouTube's script or sets
+third-party cookies for visitors who don't watch. Switching nodes tears down a
+playing video automatically.
+
+Don't also add a "Watch the demo" link — the embed replaces it.
 
 ### A new branch (a sixth hub)
 

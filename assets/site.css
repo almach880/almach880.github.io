@@ -183,6 +183,51 @@ h1 {
   color: var(--on-surface-dim); margin-top: 16px; line-height: 1.7;
 }
 
+/* ---------------- embedded demo video ----------------
+   Click-to-load facade: a thumbnail until you press play, then the real
+   player. Embedding an iframe on every node would pull ~1MB of YouTube
+   script and set third-party cookies before anyone asked to watch. */
+
+.video { margin-top: 20px; }
+.video:empty { margin-top: 0; }
+
+.vfacade {
+  position: relative; display: block; width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0; border: 1px solid var(--outline); border-radius: 14px;
+  overflow: hidden; background: var(--surface-c); cursor: pointer;
+  transition: border-color .25s;
+}
+.vfacade:hover { border-color: var(--accent-live, var(--skl)); }
+.vfacade img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  opacity: .78; transition: opacity .3s, transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.vfacade:hover img { opacity: 1; transform: scale(1.03); }
+
+.vplay {
+  position: absolute; inset: 0; margin: auto;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(14,15,19,.66);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.22);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .25s, transform .25s;
+}
+.vfacade:hover .vplay { background: rgba(14,15,19,.85); transform: scale(1.07); }
+.vplay svg { margin-left: 3px; }
+
+.vcap {
+  position: absolute; left: 12px; bottom: 10px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .4px;
+  color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.9);
+}
+
+.video iframe {
+  width: 100%; aspect-ratio: 16 / 9;
+  border: 0; border-radius: 14px; display: block;
+}
+
 /* outbound links to things hosted elsewhere */
 .golinks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; flex: 0 0 auto; }
 .golinks:empty { margin-top: 0; }
