@@ -1,4 +1,4 @@
-/* CORE — the node everything hangs off
+/* CORE — the node everything hangs off. This is the intro; make it count.
    Edit freely. Each file calls NM.add([...]) and the graph picks it up.
    Node shape: id, kind, cat, parent, label, kicker, title, body, more, foot, tags
 */
@@ -6,11 +6,16 @@
 NM.add([
 
 { id:"neal", kind:"core", cat:"Career", label:"Neal Meinke",
-  kicker:"Start anywhere", title:"Six years of enterprise AI",
-  body:"Senior lead application developer and AI engineer. I build semi-autonomous agents that call tools across thousands of API endpoints to make multi-step decisions.\n\nBefore that: a decade running operations, ecommerce, and strategy. The business years are why I can talk to stakeholders. The AI years are why I can ship.",
-  more:"Everything on this canvas is painted by a game loop — four processes running at four different speeds against one shared node map, with a renderer that samples state and never waits for anything.\n\nThe motion is not CSS. Every position, size, and opacity is a damped harmonic oscillator evaluated in closed form from (u₀, v₀, t₀), so it tolerates any frame rate with no accumulated error and can be retargeted mid-flight with velocity carrying through. Click one hub and then another before the first settles — nothing snaps, nothing queues.\n\nSpatial properties overshoot because momentum reads as mass. Effects properties never do, because overshooting opacity reads as a flicker. That single rule is most of what separates motion that feels physical from motion that feels scripted.\n\nPick a node. The left card is the short version, this panel is the long one.",
-  foot:"5 hubs · 24 nodes · analytic springs · quiesces when idle",
-  tags:["AI Engineer","Agents","6 yrs enterprise"] },
+  kicker:"Start here",
+  title:"I build enterprise AI agents — and a system for building them",
+
+  body:"At ADP I lead development on some of the company's most advanced conversational AI: semi-autonomous, looping agents that call tools across thousands of API endpoints to make multi-step decisions in real time.\n\nSix years in enterprise conversational and agentic AI — Watson, Dialogflow, and now agent architectures — taught me the hard part isn't the model. It's delivering accurate, reviewable change inside large codebases that never stop moving.",
+
+  more:"So I built a way to do that consistently.\n\nI run a spec-driven workflow on top of a persistent, self-updating engineering wiki — an LLM knowledge base that knows my repos, directories, and components, extended with a custom skill that populates it from the work I'm actually doing. My agents start with compounding context instead of starting cold every session.\n\n<strong>Onboarding into brownfield code.</strong> I integrate into large systems that other teams are actively changing underneath me. The wiki plus collaborative exploration turns a multi-week ramp into an afternoon of mapping.\n\n<strong>Validating before the merge.</strong> Simulating events, logic, and UI at the component level, so I know a change is correct and efficient before anyone reviews it — rather than discovering it in an integration environment days later.\n\n<strong>Auditing my own work.</strong> Independent agent teams re-check my research against the repo before I commit to an approach. The failure mode in this work isn't ignorance, it's confidence, and this is what catches it.\n\n<strong>Communicating the result.</strong> Single-page, accessibility-aware HTML reports that give multi-stakeholder projects the level of detail they actually want, instead of a wall of text nobody reads.\n\nThe outcome I'm proudest of isn't a metric. Project managers started coming to me to ask how I produce this much detail — which is what pushed me to keep refining the system rather than treating it as done.\n\nIf you're building enterprise AI agents and care as much about how they get delivered as whether they work, I'd like to talk.",
+
+  foot:"AWS Strands · MCP · LangGraph · Claude Code · spec-driven delivery",
+  links:[{label:"Get in touch on LinkedIn", url:"https://www.linkedin.com/in/neal-meinke-40620150/"}],
+  tags:["Enterprise AI agents","Spec-driven delivery","AI practitioner"] },
 
 /* ---------- hubs ---------- */
 

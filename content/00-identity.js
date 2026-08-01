@@ -1,8 +1,8 @@
 /* IDENTITY — the line that sits beside your name on the page.
+   Keep it to one breath. The core node carries the full pitch.
    Inline HTML is allowed here (<b> for emphasis). */
 
 NM.setIdentity({
-  role: "<b>Senior lead application developer</b> building semi-autonomous AI " +
-        "agents for a platform serving tens of millions of users. Six years in " +
-        "enterprise conversational and agentic AI."
+  role: "I build production AI agents for the enterprise — and " +
+        "<b>a system around how I build them.</b>"
 });
