@@ -793,9 +793,14 @@ function showNode(id, now) {
   dKicker.textContent = n.kicker;
   dTitle.textContent = n.title;
 
-  typeState.full = n.body || "";
+  /* The body types in one character at a time via textContent, so any markup
+     in it would appear as literal text mid-type. Type the stripped version,
+     then swap in the marked-up version the moment typing finishes. */
+  typeState.rich  = n.body || "";
+  typeState.full  = stripTags(typeState.rich);
   typeState.shown = 0;
-  typeState.t0 = now;
+  typeState.done  = false;
+  typeState.t0    = now;
 
   dLong.innerHTML = escapeButBold(n.more || "");
   dFoot.textContent = n.foot || "";
@@ -860,10 +865,17 @@ function escapeButBold(s) {
           .replace(/&lt;\/strong&gt;/g, "</strong>");
 }
 
+function stripTags(s) { return (s || "").replace(/<[^>]+>/g, ""); }
+
 function typeSetStep(now) {
   var full = typeState.full;
   if (!full) return false;
   if (typeState.shown >= full.length) {
+    if (!typeState.done) {
+      /* typing finished — render the real markup */
+      dBody.innerHTML = escapeButBold(typeState.rich);
+      typeState.done = true;
+    }
     detail.style.setProperty("--caret", "0");
     return false;
   }

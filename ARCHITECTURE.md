@@ -73,12 +73,23 @@ That's the whole process.
   title:"Headline in the reading panel",
   body:"Short read. Types in character by character.",
   more:"Long read. Blank lines with \\n\\n become paragraphs.",
-  foot:"small mono line at the bottom",
+  foot:"small mono line at the bottom — plain text only, no markup",
   links:[{label:"See it live", url:"https://..."}],   // optional
   video:"YOUTUBE_ID",                                // optional, see below
   videoLabel:"Caption on the thumbnail",             // optional
   tags:["Chip","Chip","Chip"] }
 ```
+
+### Emphasis
+
+`body` and `more` support `<strong>...</strong>`. Nothing else — no other tags,
+no links inside the text (use the `links` array for those).
+
+In `body` the emphasis appears once the type-in animation finishes, since the
+text types one character at a time and a half-written tag would show as
+literal text. That's handled for you; just write the tag.
+
+`foot`, `label`, and `tags` are plain text and will show markup literally.
 
 ### Embedding a demo video
 
