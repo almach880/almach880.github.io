@@ -58,6 +58,10 @@ body {
   grid-template-columns: minmax(340px, var(--rail-w)) 7px 1fr;
 }
 
+/* ---------------- mobile top bar (hidden on desktop) ---------------- */
+
+.topbar { display: none; }
+
 /* ---------------- splitter ---------------- */
 
 .split {
@@ -258,23 +262,62 @@ canvas {
 }
 
 @media (max-width: 820px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  /* three stacked rows: header, graph, reading card */
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
   .split { display: none; }
+
+  .topbar {
+    order: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-top, 0px));
+    border-bottom: 1px solid var(--outline-soft);
+    background: var(--surface-c);
+    min-height: 46px;
+  }
+  .wordmark {
+    display: inline-flex; align-items: center; gap: 9px;
+    text-decoration: none; color: var(--on-surface);
+    font-family: var(--disp); font-weight: 600; font-size: 15px;
+    letter-spacing: -.3px;
+  }
+  .wordmark svg { color: var(--skl); flex: 0 0 auto; }
+  .topnav { display: flex; gap: 14px; }
+  .topnav a {
+    font-family: var(--mono); font-size: 10.5px; color: var(--on-surface-dim);
+    text-decoration: none; padding: 6px 0;
+  }
+  .topnav a:active { color: var(--skl); }
+
   .stage { order: 1; }
+
+  /* the rail is now nothing but the reading card */
   .rail {
     order: 2; border-right: none; border-top: 1px solid var(--outline-soft);
-    padding: 14px 16px 18px; max-height: 52dvh;
+    padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    max-height: 54dvh;
   }
-  .mark { display: none; }
-  .head-row { flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 12px; }
-  .role { display: none; }
-  h1 { font-size: 24px; }
-  .detail { border-radius: 6px 14px 14px 6px; padding: 14px 16px; }
-  .detail h2 { font-size: 17px; margin-bottom: 10px; }
-  .detail .body { font-size: 14px; }
+  .mark, .head-row, .rail-foot { display: none; }
+
+  .detail {
+    border-radius: 14px; padding: 14px 16px;
+    border-left-width: 2px; margin-top: 12px;
+  }
+  .detail h2 { font-size: 18px; margin-bottom: 10px; }
+  .detail .body { font-size: 14.5px; }
+  .detail .long { font-size: 13.5px; }
   .hint { display: none; }
-  /* touch targets: 44px minimum, and the graph gets more of the screen */
+
+  /* touch targets: 44px minimum */
   .controls { bottom: 10px; left: 10px; right: 10px; gap: 6px; }
   .seg button { padding: 11px 14px; font-size: 10.5px; min-height: 44px; }
-  .rail { max-height: 46dvh; }
+}
+
+@media (max-width: 820px) and (orientation: landscape) {
+  /* phone on its side — the graph needs the height more than the text does */
+  .rail { max-height: 62dvh; }
+  .topbar { min-height: 40px; padding-top: 6px; padding-bottom: 6px; }
 }
